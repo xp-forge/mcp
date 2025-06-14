@@ -13,7 +13,7 @@ class Value extends Result {
     yield 'value' => $this->backing;
   }
 
-  public function first(): ?array {
+  public function first() {
     return $this->backing;
   }
 }

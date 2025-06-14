@@ -32,7 +32,7 @@ class EventStream extends Result {
   }
 
   /** Returns the first message */
-  public function first(): ?array {
+  public function first() {
     return $this->getIterator()->current() ?: null;
   }
 }

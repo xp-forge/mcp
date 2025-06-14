@@ -5,5 +5,5 @@ use IteratorAggregate;
 abstract class Result implements IteratorAggregate {
 
   /** @return var */
-  public abstract function first(): ?array;
+  public abstract function first();
 }

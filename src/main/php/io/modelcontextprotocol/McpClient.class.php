@@ -15,11 +15,11 @@ class McpClient implements Traceable {
   /**
    * Creates a new MCP client with a given endpoint and protocol version
    *
-   * @param  string|array|util.URI $endpoint
+   * @param  string|array|util.URI|io.modelcontextprotocol.Transport $endpoint
    * @param  string $version
    */
   public function __construct($endpoint, string $version= '2025-03-26') {
-    $this->transport= Transport::for($endpoint);
+    $this->transport= $endpoint instanceof Transport ? $endpoint : Transport::for($endpoint);
     $this->version= $version;
   }
 
@@ -70,5 +70,6 @@ class McpClient implements Traceable {
   /** @return void */
   public function close() {
     $this->transport->close();
+    $this->server= null;
   }
 }
