@@ -26,3 +26,9 @@ $client= new McpClient('docker run --rm -i mcp/time');
 $response= $client->call('tools/list');
 Console::writeLine($response->first());
 ```
+
+See also
+--------
+* https://github.com/modelcontextprotocol/servers
+* https://modelcontextprotocol.io/specification/2025-03-26
+* https://deadprogrammersociety.com/2025/03/calling-mcp-servers-the-hard-way.html
