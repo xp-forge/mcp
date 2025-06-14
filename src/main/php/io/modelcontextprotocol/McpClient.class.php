@@ -11,16 +11,28 @@ class McpClient implements Traceable {
   private $transport, $version;
   private $server= null;
 
-  public function __construct($endpoint, $version= '2025-03-26') {
+  /** Creates a new MCP client */
+  public function __construct(string|array|URI $endpoint, string $version= '2025-03-26') {
     $this->transport= Transport::for($endpoint);
     $this->version= $version;
   }
+
+  /** @return io.modelcontextprotocol.Transport */
+  public function transport() { return $this->transport; }
+
+  /** @return string */
+  public function version() { return $this->version; }
 
   /** @param ?util.log.LogCategory */
   public function setTrace($cat) {
     $this->transport->setTrace($cat);
   }
 
+  /**
+   * The initialization phase MUST be the first interaction between client and server
+   *
+   * @return var
+   */
   public function initialize() {
     $initialize= $this->transport->call('initialize', [
       'protocolVersion' => $this->version,
@@ -30,8 +42,11 @@ class McpClient implements Traceable {
         'sampling' => (object)[],
       ],
     ]);
-    $this->server= $initialize->first();
+
+    // After successful initialization, the client MUST send an initialized
+    // notification to indicate it is ready to begin normal operations.
     $this->transport->notify('notifications/initialized');
+    return $initialize->first();
   }
 
   /**
@@ -42,12 +57,7 @@ class McpClient implements Traceable {
    * @return var
    */
   public function call($method, $params= null) {
-
-    // The initialization phase MUST be the first interaction between client and server
-    // After successful initialization, the client MUST send an initialized notification
-    // to indicate it is ready to begin normal operations
     $this->server??= $this->initialize();
-
     return $this->transport->call($method, $params);
   }
 

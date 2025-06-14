@@ -1,6 +1,7 @@
 <?php namespace io\modelcontextprotocol;
 
 use lang\{Closeable, CommandLine, IllegalArgumentException};
+use util\URI;
 use util\log\Traceable;
 
 /** @test io.modelcontextprotocol.unittest.TransportTest */
@@ -26,25 +27,37 @@ abstract class Transport implements Closeable, Traceable {
   public abstract function call($method, $params= null);
 
   /**
+   * Resolves a command line
+   *
+   * @param  lang.CommandLine $cmd
+   * @param  string[] $args
+   * @return io.modelcontextprotocol.StdIo
+   * @throws lang.IllegalArgumentException
+   */
+  private static function resolve($cmd, $args) {
+    $file= array_shift($args);
+    foreach ($cmd->resolve($file) as $executable) {
+      return new StdIo($executable, ...$args);
+    }
+
+    throw new IllegalArgumentException($file.' is not executable');
+  }
+
+  /**
    * Creates a transport instance for a given string
    *
    * @throws lang.IllegalArgumentException
    */
-  public static function for(string $arg): self {
+  public static function for(string|array|URI $arg): self {
     static $cmd= null;
 
-    if (strstr($arg, '://')) {
-      return new StreamableHttp($arg);
+    if (is_array($arg)) {
+      return self::resolve($cmd??= CommandLine::forName(PHP_OS), $arg);
+    } else if (!strstr($arg, '://')) {
+      return self::resolve($cmd??= CommandLine::forName(PHP_OS), $cmd->parse($arg));
     } else {
-      $cmd??= CommandLine::forName(PHP_OS);
-
-      $parsed= $cmd->parse($arg);
-      foreach ($cmd->resolve(array_shift($parsed)) as $executable) {
-        return new StdIo($executable, ...$parsed);
-      }
+      return new StreamableHttp($arg);
     }
-
-    throw new IllegalArgumentException('No transport for '.$arg);
   }
 
   /** Ensure close() is called */

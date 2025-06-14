@@ -11,13 +11,18 @@ class TransportTest {
     Assert::instance(StdIo::class, Transport::for(PHP_BINARY.' -v'));
   }
 
+  #[Test]
+  public function stdio_array() {
+    Assert::instance(StdIo::class, Transport::for([PHP_BINARY, '-v']));
+  }
+
   #[Test, Values(['http://localhost:8080', 'http://example.com', 'https://example.com'])]
   public function streamable_http($uri) {
     Assert::instance(StreamableHttp::class, Transport::for($uri));
   }
 
-  #[Test, Expect(IllegalArgumentException::class)]
+  #[Test, Expect(class: IllegalArgumentException::class, message: '/.+ is not executable/')]
   public function illegal_argument() {
-    Transport::for('@this.is.neither.a.uri.nor.executable@');
+    Transport::for('@this.is.not.an.executable.file@');
   }
 }

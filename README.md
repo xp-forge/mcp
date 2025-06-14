@@ -21,7 +21,7 @@ use util\cmd\Console;
 $client= new McpClient('http://localhost:3001');
 
 // Use standard I/O
-$client= new McpClient('docker run --rm -i mcp/time');
+$client= new McpClient(['docker', 'run', '--rm', '-i', 'mcp/time']);
 
 $response= $client->call('tools/list');
 Console::writeLine($response->first());
