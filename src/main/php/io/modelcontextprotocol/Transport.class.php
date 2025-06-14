@@ -46,9 +46,10 @@ abstract class Transport implements Closeable, Traceable {
   /**
    * Creates a transport instance for a given string
    *
+   * @param  string|array|util.URI $arg
    * @throws lang.IllegalArgumentException
    */
-  public static function for(string|array|URI $arg): self {
+  public static function for($arg): self {
     static $cmd= null;
 
     if (is_array($arg)) {

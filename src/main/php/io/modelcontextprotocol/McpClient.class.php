@@ -6,13 +6,19 @@ use util\log\Traceable;
  * Model Context Protocol client
  * 
  * @see  https://deadprogrammersociety.com/2025/03/calling-mcp-servers-the-hard-way.html
+ * @test io.modelcontextprotocol.unittest.McpClientTest
  */
 class McpClient implements Traceable {
   private $transport, $version;
   private $server= null;
 
-  /** Creates a new MCP client */
-  public function __construct(string|array|URI $endpoint, string $version= '2025-03-26') {
+  /**
+   * Creates a new MCP client with a given endpoint and protocol version
+   *
+   * @param  string|array|util.URI $endpoint
+   * @param  string $version
+   */
+  public function __construct($endpoint, string $version= '2025-03-26') {
     $this->transport= Transport::for($endpoint);
     $this->version= $version;
   }
