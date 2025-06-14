@@ -8,7 +8,7 @@ Model Context Protocol
 [![Supports PHP 8.0+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-8_0plus.svg)](http://php.net/)
 [![Latest Stable Version](https://poser.pugx.org/xp-forge/mcp/version.svg)](https://packagist.org/packages/xp-forge/mcp)
 
-Implements the [Model Context Protocol](https://modelcontextprotocol.io/) for the XP Framework.
+Implements the [Model Context Protocol](https://modelcontextprotocol.io/) for the XP Framework. Supports connecting to MCP servers via HTTP and standard I/O.
 
 Example
 -------
