@@ -4,20 +4,20 @@ use Traversable;
 
 /** A single return value */
 class Value extends Result {
-  private $backing;
+  private $result;
 
-  /** @param [:var] $message JSON-RPC message */
-  public function __construct($message) {
-    $this->backing= $message['result'];
+  /** @param [:var] $result JSON-RPC result member */
+  public function __construct($result) {
+    $this->result= $result;
   }
 
   /** Yields the underlying value */
   public function getIterator(): Traversable {
-    yield 'value' => $this->backing;
+    yield 'value' => $this->result;
   }
 
   /** Returns the underlying value */
   public function first() {
-    return $this->backing;
+    return $this->result;
   }
 }

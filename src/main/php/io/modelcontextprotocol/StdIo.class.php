@@ -73,12 +73,7 @@ class StdIo extends Transport {
       throw new CallFailed(-1, 'Unexpected EOF from process');
     }
 
-    $message= json_decode($response, true);
-    if ($error= $message['error'] ?? null) {
-      throw new CallFailed($error['code'], $error['message']);
-    }
-
-    return new Value($message);
+    return Result::from(json_decode($response, true));
   }
 
   /** @return void */

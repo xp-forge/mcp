@@ -64,7 +64,7 @@ class StreamableHttp extends Transport {
     $header= $response->header('Content-Type');
     $p= strpos($header, ';');
     switch (false === $p ? $header : rtrim(substr($header, 0, $p))) {
-      case self::JSON: return new Value($response->value());
+      case self::JSON: return Result::from($response->value());
       case self::EVENTSTREAM: return new EventStream($response->stream());
       default: throw new FormatException('Unexpected content type "'.$header.'"');
     }
