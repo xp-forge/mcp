@@ -3,7 +3,7 @@
 use lang\Process;
 
 /**
- * Streamable HTTP MCP transport
+ * Standard I/O transport
  * 
  * @see  https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#stdio
  */
@@ -11,7 +11,13 @@ class StdIo extends Transport {
   private $process;
   private $cat= null;
 
-  public function __construct($command, ... $args) {
+  /**
+   * Creates a new transport instance
+   *
+   * @param  string|lang.Process $command
+   * @param  string[] $args
+   */
+  public function __construct($command, array $args= []) {
     $this->process= $command instanceof Process ? $command : new Process(
       $command,
       $args,

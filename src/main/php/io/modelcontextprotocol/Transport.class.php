@@ -37,7 +37,7 @@ abstract class Transport implements Closeable, Traceable {
   private static function resolve($cmd, $args) {
     $file= array_shift($args);
     foreach ($cmd->resolve($file) as $executable) {
-      return new StdIo($executable, ...$args);
+      return new StdIo($executable, $args);
     }
 
     throw new IllegalArgumentException($file.' is not executable');
