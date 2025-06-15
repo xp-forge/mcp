@@ -9,7 +9,7 @@ use util\log\Traceable;
  * @test io.modelcontextprotocol.unittest.McpClientTest
  */
 class McpClient implements Traceable {
-  private $transport, $version;
+  private $transport, $version, $capabilities;
   private $server= null;
 
   /**
@@ -21,6 +21,7 @@ class McpClient implements Traceable {
   public function __construct($endpoint, string $version= '2025-03-26') {
     $this->transport= $endpoint instanceof Transport ? $endpoint : Transport::for($endpoint);
     $this->version= $version;
+    $this->capabilities= Capabilities::client();
   }
 
   /** @return io.modelcontextprotocol.Transport */
@@ -28,6 +29,9 @@ class McpClient implements Traceable {
 
   /** @return string */
   public function version() { return $this->version; }
+
+  /** @return io.modelcontextprotocol.Capabilities */
+  public function capabilities() { return $this->capabilities; }
 
   /** @param ?util.log.LogCategory */
   public function setTrace($cat) {
@@ -37,22 +41,29 @@ class McpClient implements Traceable {
   /**
    * The initialization phase MUST be the first interaction between client and server
    *
+   * @see    https://modelcontextprotocol.io/specification/2025-03-26/basic/lifecycle#lifecycle-phases
    * @return var
    */
   public function initialize() {
     $initialize= $this->transport->call('initialize', [
       'protocolVersion' => $this->version,
       'clientInfo'      => ['name' => 'XP/MCP', 'version' => '1.0.0'],
-      'capabilities'    => [
-        'roots'    => ['listChanged' => true],
-        'sampling' => (object)[],
-      ],
+      'capabilities'    => $this->capabilities->struct(),
     ]);
+    $server= $initialize->first();
+
+    // TODO: Decide how to handle protocol version negotiation.
 
     // After successful initialization, the client MUST send an initialized
     // notification to indicate it is ready to begin normal operations.
     $this->transport->notify('notifications/initialized');
-    return $initialize->first();
+
+    return [
+      'protocolVersion' => $server['protocolVersion'],
+      'serverInfo'      => $server['serverInfo'],
+      'capabilities'    => new Capabilities($server['capabilities']),
+      'instructions'    => $server['instructions'] ?? null,
+    ];
   }
 
   /**

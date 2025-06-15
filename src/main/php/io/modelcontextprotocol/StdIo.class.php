@@ -26,6 +26,12 @@ class StdIo extends Transport {
     $this->cat= $cat;
   }
 
+  /**
+   * Sends the given payload as JSON-RPC 2.0 message to the process' standard input.
+   *
+   * @param  [:var] $payload
+   * @return void
+   */
   private function send($payload) {
     $request= json_encode(['jsonrpc' => '2.0'] + $payload);
     $this->cat && $this->cat->debug('>>>', $request);
