@@ -10,6 +10,7 @@ use lang\Process;
 class StdIo extends Transport {
   private $process;
   private $cat= null;
+  private $buffer= '';
 
   /**
    * Creates a new transport instance
@@ -66,12 +67,17 @@ class StdIo extends Transport {
   public function call($method, $params= null) {
     $this->send(['id' => uniqid(), 'method' => $method, 'params' => $params ?: (object)[]]);
 
-    $response= $this->process->out->readLine();
-    $this->cat && $this->cat->debug('<<<', $response);
-    if (false === $response) {
-      $this->process->close();
-      throw new CallFailed(-1, 'Unexpected EOF from process');
+    while (false === ($p= strpos($this->buffer, "\n"))) {
+      if (false === ($chunk= $this->process->out->read())) {
+        $this->process->close();
+        throw new CallFailed(-1, 'Unexpected EOF from process');
+      }
+      $this->buffer.= $chunk;
     }
+
+    $response= substr($this->buffer, 0, $p);
+    $this->buffer= substr($this->buffer, $p);
+    $this->cat && $this->cat->debug('<<<', $response);
 
     return Result::from(json_decode($response, true));
   }
