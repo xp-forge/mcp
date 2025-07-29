@@ -17,7 +17,7 @@ class Error extends Result {
   }
 
   /** Returns the underlying value */
-  public function first() {
+  public function value() {
     throw new CallFailed($this->code, $this->message);
   }
 }

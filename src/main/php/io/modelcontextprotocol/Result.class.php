@@ -8,7 +8,7 @@ use util\Objects;
 abstract class Result implements IteratorAggregate {
 
   /** @return var */
-  public abstract function first();
+  public abstract function value();
 
   /**
    * Creates a result from a JSON-RPC message, which is either a `Value` or an `Error`.

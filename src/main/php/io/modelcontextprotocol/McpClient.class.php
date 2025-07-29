@@ -50,7 +50,7 @@ class McpClient implements Traceable {
       'clientInfo'      => ['name' => 'XP/MCP', 'version' => '1.0.0'],
       'capabilities'    => $this->capabilities->struct(),
     ]);
-    $server= $initialize->first();
+    $server= $initialize->value();
 
     // TODO: Decide how to handle protocol version negotiation.
 

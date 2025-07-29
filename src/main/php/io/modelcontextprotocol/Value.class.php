@@ -13,11 +13,11 @@ class Value extends Result {
 
   /** Yields the underlying value */
   public function getIterator(): Traversable {
-    yield 'value' => $this->result;
+    yield 'value' => $this;
   }
 
   /** Returns the underlying value */
-  public function first() {
+  public function value() {
     return $this->result;
   }
 }

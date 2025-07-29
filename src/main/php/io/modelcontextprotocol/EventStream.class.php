@@ -22,17 +22,15 @@ class EventStream extends Result {
       if (0 === strncmp($line, 'event: ', 6)) {
         $event= substr($line, 7);
       } else if (0 === strncmp($line, 'data: ', 5)) {
-        $data= substr($line, 6);
-
-        $data= json_decode($data, true);
-        yield $event => $data['result'];
+        yield $event => Result::from(json_decode(substr($line, 6), true));
         $event= null;
       }
     }
   }
 
   /** Returns the first message */
-  public function first() {
-    return $this->getIterator()->current() ?: null;
+  public function value() {
+    $it= $this->getIterator();
+    return $it->valid() ? $it->current()->value() : null;
   }
 }

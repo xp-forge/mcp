@@ -25,7 +25,7 @@ $client= new McpClient('http://localhost:3001');
 $client= new McpClient(['docker', 'run', '--rm', '-i', 'mcp/time']);
 
 $response= $client->call('tools/list');
-Console::writeLine($response->first());
+Console::writeLine($response->value());
 ```
 
 See also

@@ -15,7 +15,7 @@ class StreamableHttpTest {
       '/mcp' => fn($call) => $call->respond(200, 'OK', ['Content-Type' => $type], $this->result($value))
     ]));
 
-    Assert::equals($value, $fixture->call('test')->first());
+    Assert::equals($value, $fixture->call('test')->value());
   }
 
   #[Test, Values(['text/event-stream', 'text/event-stream; charset=utf-8'])]
@@ -28,7 +28,7 @@ class StreamableHttpTest {
       ]))
     ]));
 
-    Assert::equals(['name' => 'test', 'version' => '1.0.0'], $fixture->call('test')->first());
+    Assert::equals(['name' => 'test', 'version' => '1.0.0'], $fixture->call('test')->value());
   }
 
   #[Test]
@@ -44,7 +44,7 @@ class StreamableHttpTest {
     ]));
     $results= [];
     foreach ($fixture->call('test') as $kind => $result) {
-      $results[]= [$kind => $result];
+      $results[]= [$kind => $result->value()];
     }
 
     Assert::equals([['message' => 'one'], ['message' => 'two']], $results);

@@ -2,7 +2,7 @@
 
 use io\modelcontextprotocol\{StdIo, CallFailed};
 use lang\Process;
-use test\{Assert, Expect, Test};
+use test\{Assert, Expect, Test, Values};
 
 class StdIoTest {
   use JsonRpc;
@@ -12,7 +12,7 @@ class StdIoTest {
     $value= ['name' => 'test', 'version' => '1.0.0'];
     $fixture= new StdIo(new Process(PHP_BINARY, ['-r', "echo '{$this->result($value)}', PHP_EOL;"]));
 
-    Assert::equals($value, $fixture->call('test')->first());
+    Assert::equals($value, $fixture->call('test')->value());
   }
 
   #[Test, Expect(class: CallFailed::class, message: '#-1: Unexpected EOF from process')]
