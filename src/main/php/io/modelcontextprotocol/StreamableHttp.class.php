@@ -53,25 +53,38 @@ class StreamableHttp extends Transport {
       ['jsonrpc' => '2.0', 'id' => uniqid(), 'method' => $method, 'params' => $params ?? (object)[]],
       self::JSON
     );
-    if (200 !== $response->status()) throw new CallFailed($response->status(), $response->error());
 
-    // If a session header is returned, remember it
-    if ($session= $response->header(self::SESSION)) {
-      $this->endpoint->with(self::SESSION, $session);
+    // Handle 200 OK and 401 Unauthorized, any other status code is unexpected.
+    if (200 === $response->status()) {
+
+      // If a session header is returned, remember it
+      if ($session= $response->header(self::SESSION)) {
+        $this->endpoint->with(self::SESSION, $session);
+      }
+
+      // Separate content-type value from optional parameters, e.g. "charset"
+      $header= $response->header('Content-Type');
+      $p= strpos($header, ';');
+      switch (false === $p ? $header : rtrim(substr($header, 0, $p))) {
+        case self::JSON: return Result::from($response->value());
+        case self::EVENTSTREAM: return new EventStream($response->stream());
+        default: throw new FormatException('Unexpected content type "'.$header.'"');
+      }
+    } else if (401 === $response->status()) {
+      return new Error($response->status(), $response->header('WWW-Authenticate'));
     }
 
-    // Separate content-type value from optional parameters, e.g. "charset"
-    $header= $response->header('Content-Type');
-    $p= strpos($header, ';');
-    switch (false === $p ? $header : rtrim(substr($header, 0, $p))) {
-      case self::JSON: return Result::from($response->value());
-      case self::EVENTSTREAM: return new EventStream($response->stream());
-      default: throw new FormatException('Unexpected content type "'.$header.'"');
-    }
+    throw new CallFailed($response->status(), $response->error());
   }
 
   /** @return void */
   public function close() {
+    $headers= $this->endpoint->headers();
+    if (!isset($headers[self::SESSION])) return;
+
+    // Clients that no longer need a particular session SHOULD send an HTTP DELETE to the
+    // MCP endpoint with the Mcp-Session-Id header, to explicitly terminate the session
+    $this->endpoint->resource('/mcp')->delete();
     $this->endpoint->with(self::SESSION, null);
   }
 }
