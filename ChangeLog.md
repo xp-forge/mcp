@@ -6,6 +6,8 @@ Model Context Protocol change log
 * Changed `initialize()` to return a *Result* instance instead of raising
   an error, adding the ability to handle missing authentication gracefully
   (@thekid)
+* Call `DELETE` on the MCP endpoint if an MCP session ID is established
+  (@thekid)
 
 ## 0.2.0 / 2025-07-29
 
