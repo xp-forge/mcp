@@ -69,10 +69,9 @@ class McpClientTest {
       [
         'protocolVersion' => $transport->version,
         'serverInfo'      => ['name' => 'XP/MCP', 'version' => '1.0.0'],
-        'capabilities'    => $capabilities,
-        'instructions'    => null,
+        'capabilities'    => $capabilities->struct(),
       ],
-      $fixture->initialize()
+      $fixture->initialize()->value()
     );
     Assert::equals(
       [

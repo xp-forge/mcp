@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Changed `initialize()` to return a *Result* instance instead of raising
+  an error, adding the ability to handle missing authentication gracefully
+  (@thekid)
+
 ## 0.2.0 / 2025-07-29
 
 * Fixed issue #1: Standard I/O default line limit (8192 bytes) exceeded

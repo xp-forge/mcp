@@ -42,28 +42,24 @@ class McpClient implements Traceable {
    * The initialization phase MUST be the first interaction between client and server
    *
    * @see    https://modelcontextprotocol.io/specification/2025-03-26/basic/lifecycle#lifecycle-phases
-   * @return var
+   * @throws io.modelcontextprotocol.CallFailed
    */
-  public function initialize() {
+  public function initialize(): Result {
     $initialize= $this->transport->call('initialize', [
       'protocolVersion' => $this->version,
       'clientInfo'      => ['name' => 'XP/MCP', 'version' => '1.0.0'],
       'capabilities'    => $this->capabilities->struct(),
     ]);
-    $server= $initialize->value();
 
     // TODO: Decide how to handle protocol version negotiation.
+    if ($initialize instanceof Value) {
 
-    // After successful initialization, the client MUST send an initialized
-    // notification to indicate it is ready to begin normal operations.
-    $this->transport->notify('notifications/initialized');
+      // After successful initialization, the client MUST send an initialized
+      // notification to indicate it is ready to begin normal operations.
+      $this->transport->notify('notifications/initialized');
+    }
 
-    return [
-      'protocolVersion' => $server['protocolVersion'],
-      'serverInfo'      => $server['serverInfo'],
-      'capabilities'    => new Capabilities($server['capabilities']),
-      'instructions'    => $server['instructions'] ?? null,
-    ];
+    return $initialize;
   }
 
   /**
@@ -74,7 +70,7 @@ class McpClient implements Traceable {
    * @return var
    */
   public function call($method, $params= null) {
-    $this->server??= $this->initialize();
+    $this->server??= $this->initialize()->value();
     return $this->transport->call($method, $params);
   }
 
