@@ -71,22 +71,19 @@ class StreamableHttpTest {
     $sessions= [];
     $fixture= new StreamableHttp(new TestEndpoint([
       'POST /mcp' => function($call) use(&$sessions) {
-        $sessions[]= $call->request()->header('Mcp-Session-Id');
-        return $call->respond(
-          200,
-          'OK',
-          ['Content-Type' => 'application/json', 'Mcp-Session-Id' => '6100'],
-          $this->result(true)
-        );
+        $headers= ['Content-Type' => 'application/json'];
+
+        // Start session
+        if (null === ($session= $call->request()->header('Mcp-Session-Id'))) {
+          $headers['Mcp-Session-Id']= '6100';
+        }
+
+        $sessions[]= $session;
+        return $call->respond(200, 'OK', $headers, $this->result(true));
       },
       'DELETE /mcp' => function($call) use(&$sessions) {
         $sessions[]= $call->request()->header('Mcp-Session-Id');
-        return $call->respond(
-          204,
-          'No Content',
-          [],
-          null
-        );
+        return $call->respond(204, 'No Content', [], null);
       }
     ]));
 
