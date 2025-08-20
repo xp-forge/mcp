@@ -79,8 +79,7 @@ class StreamableHttp extends Transport {
 
   /** @return void */
   public function close() {
-    $headers= $this->endpoint->headers();
-    if (!isset($headers[self::SESSION])) return;
+    if (!isset($this->endpoint->headers()[self::SESSION])) return;
 
     // Clients that no longer need a particular session SHOULD send an HTTP DELETE to the
     // MCP endpoint with the Mcp-Session-Id header, to explicitly terminate the session

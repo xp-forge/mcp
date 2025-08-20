@@ -65,4 +65,35 @@ class StreamableHttpTest {
     ]));
     $fixture->call('test');
   }
+
+  #[Test]
+  public function session_handling() {
+    $sessions= [];
+    $fixture= new StreamableHttp(new TestEndpoint([
+      'POST /mcp' => function($call) use(&$sessions) {
+        $sessions[]= $call->request()->header('Mcp-Session-Id');
+        return $call->respond(
+          200,
+          'OK',
+          ['Content-Type' => 'application/json', 'Mcp-Session-Id' => '6100'],
+          $this->result(true)
+        );
+      },
+      'DELETE /mcp' => function($call) use(&$sessions) {
+        $sessions[]= $call->request()->header('Mcp-Session-Id');
+        return $call->respond(
+          204,
+          'No Content',
+          [],
+          null
+        );
+      }
+    ]));
+
+    $fixture->call('initialize');
+    $fixture->call('tools/list');
+    $fixture->close();
+
+    Assert::equals([null, '6100', '6100'], $sessions);
+  }
 }
