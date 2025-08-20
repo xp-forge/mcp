@@ -78,11 +78,11 @@ class StreamableHttpTest {
           $headers['Mcp-Session-Id']= '6100';
         }
 
-        $sessions[]= $session;
+        $sessions['call:'.$call->request()->payload()->value()['method']]= $session;
         return $call->respond(200, 'OK', $headers, $this->result(true));
       },
       'DELETE /mcp' => function($call) use(&$sessions) {
-        $sessions[]= $call->request()->header('Mcp-Session-Id');
+        $sessions['close']= $call->request()->header('Mcp-Session-Id');
         return $call->respond(204, 'No Content', [], null);
       }
     ]));
@@ -91,6 +91,6 @@ class StreamableHttpTest {
     $fixture->call('tools/list');
     $fixture->close();
 
-    Assert::equals([null, '6100', '6100'], $sessions);
+    Assert::equals(['call:initialize' => null, 'call:tools/list' => '6100', 'close' => '6100'], $sessions);
   }
 }
