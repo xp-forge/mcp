@@ -54,7 +54,7 @@ class McpClientTest {
         $this->sent[]= ['call' => $method, 'params' => $params];
 
         // See https://modelcontextprotocol.io/specification/2025-03-26/basic/lifecycle
-        return new Value([
+        yield 'result' => new Value([
           'protocolVersion' => $this->version,
           'serverInfo'      => ['name' => 'XP/MCP', 'version' => '1.0.0'],
           'capabilities'    => $this->capabilities->struct(),

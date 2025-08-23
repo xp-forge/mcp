@@ -3,6 +3,9 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Handle session termination by server, starting a new session by sending
+  and initialize request
+  (@thekid)
 * Changed `initialize()` to return a *Result* instance instead of raising
   an error, adding the ability to handle missing authentication gracefully
   (@thekid)

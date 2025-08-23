@@ -45,21 +45,21 @@ class McpClient implements Traceable {
    * @throws io.modelcontextprotocol.CallFailed
    */
   public function initialize(): Result {
-    $initialize= $this->transport->call('initialize', [
+    $init= $this->transport->call('initialize', [
       'protocolVersion' => $this->version,
       'clientInfo'      => ['name' => 'XP/MCP', 'version' => '1.0.0'],
       'capabilities'    => $this->capabilities->struct(),
     ]);
 
     // TODO: Decide how to handle protocol version negotiation.
-    if ($initialize instanceof Value) {
 
-      // After successful initialization, the client MUST send an initialized
-      // notification to indicate it is ready to begin normal operations.
-      $this->transport->notify('notifications/initialized');
+    // After successful initialization, the client MUST send an initialized
+    // notification to indicate it is ready to begin normal operations.
+    switch ($init->key()) {
+      case 'result': $this->transport->notify('notifications/initialized'); return $init->current();
+      case 'authenticate': return new Error(401, $init->current());
+      default: $init->throw(new CallFailed($init->key(), $init->current()));
     }
-
-    return $initialize;
   }
 
   /**
@@ -67,12 +67,17 @@ class McpClient implements Traceable {
    *
    * @param  string $method
    * @param  ?[:var] $params
-   * @return var
    * @throws io.modelcontextprotocol.CallFailed
    */
-  public function call($method, $params= null) {
+  public function call($method, $params= null): Result {
     $this->server??= $this->initialize()->value();
-    return $this->transport->call($method, $params);
+    foreach ($this->transport->call($method, $params) as $op => $result) {
+      switch ($op) {
+        case 'result': return $result;
+        case 'terminated': $this->server= $this->initialize()->value(); break;
+        default: throw new CallFailed($op, $result);
+      }
+    }
   }
 
   /** @return void */

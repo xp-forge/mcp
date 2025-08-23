@@ -1,6 +1,6 @@
 <?php namespace io\modelcontextprotocol;
 
-use lang\Process;
+use lang\{Process, IllegalStateException};
 
 /**
  * Standard I/O transport
@@ -61,8 +61,8 @@ class StdIo extends Transport {
    *
    * @param  string $method
    * @param  ?[:string] $params
-   * @return io.modelcontextprotocol.Result
-   * @throws io.modelcontextprotocol.CallFailed
+   * @return iterable
+   * @throws lang.IllegalStateException
    */
   public function call($method, $params= null) {
     $this->send(['id' => uniqid(), 'method' => $method, 'params' => $params ?: (object)[]]);
@@ -70,7 +70,7 @@ class StdIo extends Transport {
     while (false === ($p= strpos($this->buffer, "\n"))) {
       if (false === ($chunk= $this->process->out->read())) {
         $this->process->close();
-        throw new CallFailed(-1, 'Unexpected EOF from process');
+        throw new IllegalStateException('Unexpected EOF from process');
       }
       $this->buffer.= $chunk;
     }
@@ -79,7 +79,7 @@ class StdIo extends Transport {
     $this->buffer= substr($this->buffer, $p);
     $this->cat && $this->cat->debug('<<<', $response);
 
-    return Result::from(json_decode($response, true));
+    yield 'result' => Result::from(json_decode($response, true));
   }
 
   /** @return void */

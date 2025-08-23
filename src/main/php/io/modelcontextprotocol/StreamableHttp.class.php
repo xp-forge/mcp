@@ -44,12 +44,11 @@ class StreamableHttp extends Transport {
    *
    * @param  string $method
    * @param  ?[:string] $params
-   * @return io.modelcontextprotocol.Result
-   * @throws io.modelcontextprotocol.CallFailed
+   * @return iterable
    * @throws lang.FormatException
    */
   public function call($method, $params= null) {
-    $response= $this->endpoint->resource('/mcp')->post(
+    call: $response= $this->endpoint->resource('/mcp')->post(
       ['jsonrpc' => '2.0', 'id' => uniqid(), 'method' => $method, 'params' => $params ?? (object)[]],
       self::JSON
     );
@@ -66,15 +65,21 @@ class StreamableHttp extends Transport {
       $header= $response->header('Content-Type');
       $p= strpos($header, ';');
       switch (false === $p ? $header : rtrim(substr($header, 0, $p))) {
-        case self::JSON: return Result::from($response->value());
-        case self::EVENTSTREAM: return new EventStream($response->stream());
+        case self::JSON: yield 'result' => Result::from($response->value());
+        case self::EVENTSTREAM: yield 'result' => new EventStream($response->stream());
         default: throw new FormatException('Unexpected content type "'.$header.'"');
       }
     } else if (401 === $response->status()) {
-      return new Error($response->status(), $response->header('WWW-Authenticate'));
-    }
+      yield 'authenticate' => $response->header('WWW-Authenticate');
+    } else if (404 === $response->status() && ($session= $this->endpoint->headers()[self::SESSION] ?? null)) {
 
-    throw new CallFailed($response->status(), $response->error());
+      // Server has terminated the session, indicate session termination and rerun.
+      $this->endpoint->with(self::SESSION, null);
+      yield 'terminated' => $session;
+      goto call;
+    } else {
+      yield $response->status() => $response->error();
+    }
   }
 
   /** @return void */
