@@ -68,6 +68,7 @@ class McpClient implements Traceable {
    * @param  string $method
    * @param  ?[:var] $params
    * @return var
+   * @throws io.modelcontextprotocol.CallFailed
    */
   public function call($method, $params= null) {
     $this->server??= $this->initialize()->value();
