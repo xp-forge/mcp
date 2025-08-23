@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.3.0 / 2025-08-23
+
+* Merged PR #3: Return an *Authorization* instance from `initialize()`
+  (@thekid)
 * Handle session termination by server, starting a new session by sending
   and initialize request
   (@thekid)
