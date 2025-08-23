@@ -73,7 +73,8 @@ class StreamableHttp extends Transport {
       yield 'authenticate' => $response->header('WWW-Authenticate');
     } else if (404 === $response->status() && ($session= $this->endpoint->headers()[self::SESSION] ?? null)) {
 
-      // Server has terminated the session, indicate session termination and rerun.
+      // Server has terminated the session, indicate session termination to MCP client,
+      // which will call initialize, creating a new session. Finally, re-run the call.
       $this->endpoint->with(self::SESSION, null);
       yield 'terminated' => $session;
       goto call;
