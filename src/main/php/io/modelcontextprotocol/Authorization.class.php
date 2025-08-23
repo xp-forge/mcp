@@ -2,7 +2,6 @@
 
 use Traversable;
 use lang\FormatException;
-use util\Objects;
 
 /** 
  * MCP servers MUST use the HTTP header WWW-Authenticate when returning
@@ -72,11 +71,11 @@ class Authorization extends Result {
 
   /** Yields the underlying value */
   public function getIterator(): Traversable {
-    throw new CallFailed(401, $this->scheme.' '.Objects::stringOf($this->parameters));
+    throw new CallFailed(401, $this->header());
   }
 
   /** Returns the underlying value */
   public function value() {
-    throw new CallFailed(401, $this->scheme.' '.Objects::stringOf($this->parameters));
+    throw new CallFailed(401, $this->header());
   }
 }

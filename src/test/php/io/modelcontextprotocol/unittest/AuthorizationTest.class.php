@@ -1,7 +1,7 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
-use io\modelcontextprotocol\Authorization;
-use test\{Assert, Test};
+use io\modelcontextprotocol\{Authorization, CallFailed};
+use test\{Assert, Expect, Test};
 
 class AuthorizationTest {
   const PARAMETERS= [
@@ -41,5 +41,10 @@ class AuthorizationTest {
       (new Authorization('Bearer', self::PARAMETERS)),
       Authorization::parse('Bearer error="invalid_request", resource_metadata="https://example.com/.well-known/oauth-protected-resource/mcp"')
     );
+  }
+
+  #[Test, Expect(class: CallFailed::class, message: '#401: Bearer error="invalid_request", resource_metadata="https://example.com/.well-known/oauth-protected-resource/mcp"')]
+  public function value() {
+    (new Authorization('Bearer', self::PARAMETERS))->value();
   }
 }
