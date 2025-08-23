@@ -70,7 +70,7 @@ class StreamableHttp extends Transport {
         default: throw new FormatException('Unexpected content type "'.$header.'"');
       }
     } else if (401 === $response->status()) {
-      yield 'authenticate' => $response->header('WWW-Authenticate');
+      yield 'authorize' => $response->header('WWW-Authenticate');
     } else if (404 === $response->status() && ($session= $this->endpoint->headers()[self::SESSION] ?? null)) {
 
       // Server has terminated the session, indicate session termination to MCP client,

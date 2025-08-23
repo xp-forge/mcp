@@ -57,7 +57,7 @@ class McpClient implements Traceable {
     // notification to indicate it is ready to begin normal operations.
     switch ($init->key()) {
       case 'result': $this->transport->notify('notifications/initialized'); return $init->current();
-      case 'authenticate': return new Error(401, $init->current());
+      case 'authorize': return Authorization::parse($init->current());
       default: $init->throw(new CallFailed($init->key(), $init->current()));
     }
   }
