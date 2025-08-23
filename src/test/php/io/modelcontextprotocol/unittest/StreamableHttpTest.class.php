@@ -8,6 +8,43 @@ use webservices\rest\TestEndpoint;
 class StreamableHttpTest {
   use JsonRpc;
 
+  private function newFixture(array &$sessions): StreamableHttp {
+    return new StreamableHttp(new TestEndpoint([
+      'POST /mcp' => function($call) use(&$sessions) {
+
+        // Create session on intialization, destroy when logout is called
+        $headers= ['Content-Type' => 'application/json'];
+        $method= $call->request()->payload()->value()['method'];
+        switch ($method) {
+          case 'initialize':
+            $id= sizeof($sessions) + 1;
+            $sessions[$id]= ['active' => true, 'calls' => [$method]];
+            $headers[StreamableHttp::SESSION]= $id;
+            return $call->respond(200, 'OK', $headers, $this->result(true));
+
+          case '$logout':
+            $id= $call->request()->header(StreamableHttp::SESSION);
+            $sessions[$id]['active']= false;
+            $sessions[$id]['calls'][]= $method;
+            return $call->respond(200, 'OK', $headers, $this->result(true));
+
+          default:
+            $id= $call->request()->header(StreamableHttp::SESSION);
+            if (!$sessions[$id]['active']) return $call->respond(404, 'Session terminated');
+
+            $sessions[$id]['calls'][]= $method;
+            return $call->respond(200, 'OK', $headers, $this->result(true));
+        }
+      },
+      'DELETE /mcp' => function($call) use(&$sessions) {
+        $id= $call->request()->header(StreamableHttp::SESSION);
+        $sessions[$id]['active']= false;
+        $sessions[$id]['calls'][]= '$close';
+        return $call->respond(204, 'No Content', [], null);
+      }
+    ]));
+  }
+
   #[Test, Values(['application/json', 'application/json; charset=utf-8'])]
   public function json($type) {
     $value= ['name' => 'test', 'version' => '1.0.0'];
@@ -69,62 +106,25 @@ class StreamableHttpTest {
   #[Test]
   public function session_handling() {
     $sessions= [];
-    $fixture= new StreamableHttp(new TestEndpoint([
-      'POST /mcp' => function($call) use(&$sessions) {
-        $headers= ['Content-Type' => 'application/json'];
-
-        // Start session
-        if (null === ($session= $call->request()->header(StreamableHttp::SESSION))) {
-          $headers[StreamableHttp::SESSION]= '6100';
-        }
-
-        $sessions['call:'.$call->request()->payload()->value()['method']]= $session;
-        return $call->respond(200, 'OK', $headers, $this->result(true));
-      },
-      'DELETE /mcp' => function($call) use(&$sessions) {
-        $sessions['close']= $call->request()->header(StreamableHttp::SESSION);
-        return $call->respond(204, 'No Content', [], null);
-      }
-    ]));
+    $fixture= $this->newFixture($sessions);
 
     $fixture->call('initialize')->next();
     $fixture->call('tools/list')->next();
     $fixture->close();
 
-    Assert::equals(['call:initialize' => null, 'call:tools/list' => '6100', 'close' => '6100'], $sessions);
+    Assert::equals(
+      ['active' => false, 'calls' => ['initialize', 'tools/list', '$close']],
+      $sessions[1]
+    );
   }
 
   #[Test]
   public function session_termination() {
     $sessions= [];
-    $fixture= new StreamableHttp(new TestEndpoint([
-      'POST /mcp' => function($call) use(&$sessions) {
-        static $id= 6100;
-
-        // Create session on intialization, destroy when logout is called
-        $headers= ['Content-Type' => 'application/json'];
-        switch ($call->request()->payload()->value()['method']) {
-          case 'initialize':
-            $id++;
-            $sessions[$id]= true;
-            $headers[StreamableHttp::SESSION]= $id;
-            return $call->respond(200, 'OK', $headers, $this->result(true));
-
-          case 'logout':
-            unset($sessions[$call->request()->header(StreamableHttp::SESSION)]);
-            return $call->respond(200, 'OK', $headers, $this->result(true));
-
-          default:
-            if (!($session= $session[$call->request()->header(StreamableHttp::SESSION)] ?? null)) {
-              return $call->respond(404, 'Session terminated');
-            }
-            return $call->respond(200, 'OK', $headers, $this->result(true));
-        }
-      }
-    ]));
+    $fixture= $this->newFixture($sessions);
 
     $fixture->call('initialize')->next();
-    $fixture->call('logout')->next();
+    $fixture->call('$logout')->next();
 
     Assert::equals('terminated', $fixture->call('tools/list')->key());
   }
