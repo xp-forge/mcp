@@ -15,6 +15,7 @@ class StreamableHttp extends Transport {
   const SESSION     = 'Mcp-Session-Id';
 
   private $endpoint;
+  private $terminate= false;
 
   /** @param string|util.URI|webservices.rest.Endpoint $endpoint */
   public function __construct($endpoint) {
@@ -25,6 +26,17 @@ class StreamableHttp extends Transport {
   /** @param ?util.log.LogCategory */
   public function setTrace($cat) {
     $this->endpoint->setTrace($cat);
+  }
+
+  /** Suspends this transport for later continuation */
+  public function suspend(): array {
+    $this->terminate= false;
+    return ['uri' => (string)$this->endpoint->base(), 'headers' => $this->endpoint->headers()];
+  }
+
+  /** Resumes a previously suspended transport */
+  public static function resume(array $suspended): self {
+    return new self((new Endpoint($suspended['uri']))->with($suspended['headers']));
   }
 
   /**
@@ -59,6 +71,7 @@ class StreamableHttp extends Transport {
       // If a session header is returned, remember it
       if ($session= $response->header(self::SESSION)) {
         $this->endpoint->with(self::SESSION, $session);
+        $this->terminate= true;
       }
 
       // Separate content-type value from optional parameters, e.g. "charset"
@@ -85,7 +98,7 @@ class StreamableHttp extends Transport {
 
   /** @return void */
   public function close() {
-    if (!isset($this->endpoint->headers()[self::SESSION])) return;
+    if (!$this->terminate) return;
 
     // Clients that no longer need a particular session SHOULD send an HTTP DELETE to the
     // MCP endpoint with the Mcp-Session-Id header, to explicitly terminate the session

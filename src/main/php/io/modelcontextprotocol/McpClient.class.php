@@ -24,6 +24,26 @@ class McpClient implements Traceable {
     $this->capabilities= Capabilities::client();
   }
 
+  /** Suspends this MCP client for later continuation */
+  public function suspend(): array {
+    return [
+      'transport' => ['impl' => get_class($this->transport), 'suspended' => $this->transport->suspend()],
+      'version'   => $this->version,
+      'server'    => $this->server,
+    ];
+  }
+
+  /** Resumes a previously suspended transport */
+  public static function resume(array $suspended): self {
+    $self= new self(
+      $suspended['transport']['impl']::resume($suspended['transport']['suspended']),
+      $suspended['version']
+    );
+    $self->server= $suspended['server'];
+    return $self;
+  }
+
+
   /** @return io.modelcontextprotocol.Transport */
   public function transport() { return $this->transport; }
 
