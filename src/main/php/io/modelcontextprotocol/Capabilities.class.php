@@ -28,6 +28,16 @@ class Capabilities implements Value {
     ]);
   }
 
+  /** Creates server capabilities */
+  public static function server() {
+    return new self([
+      'logging'   => (object)[],
+      'prompts'   => (object)[],
+      'resources' => (object)[],
+      'tools'     => ['listChanged' => true],
+    ]);
+  }
+
   /** @return [:var] */
   public function struct() {
     return array_filter($this->struct, fn($value) => null !== $value);
