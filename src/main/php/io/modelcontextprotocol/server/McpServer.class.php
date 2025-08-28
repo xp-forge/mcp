@@ -24,6 +24,13 @@ class McpServer implements Handler, Traceable {
     $this->cat= $cat;
   }
 
+  /**
+   * Receive JSON RPC payload from the request
+   *
+   * @param  web.Request $request
+   * @return var
+   * @throws lang.FormatException
+   */
   private function receive($request) {
     $header= $request->header('Content-Type');
     if (0 !== strncmp($header, self::JSON, strcspn($header, ';'))) {
@@ -35,6 +42,13 @@ class McpServer implements Handler, Traceable {
     return $payload;
   }
 
+  /**
+   * Sends an answer via JSON RPC to the response
+   *
+   * @param  web.Response $response
+   * @param  var $answer
+   * @return void
+   */
   private function send($response, $answer) {
     $payload= ['jsonrpc' => '2.0'] + $answer;
     $response->header('Content-Type', self::JSON);
@@ -43,6 +57,13 @@ class McpServer implements Handler, Traceable {
     $this->cat && $this->cat->debug('<<<', $payload);
   }
 
+  /**
+   * Handle requests
+   *
+   * @param  web.Request $request
+   * @param  web.Response $response
+   * @return var
+   */
   public function handle($request, $response) {
     $route= $request->method().' '.rtrim($request->uri()->path(), '/');
     switch ($route) {
