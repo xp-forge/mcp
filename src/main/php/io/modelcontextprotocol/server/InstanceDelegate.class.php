@@ -2,24 +2,26 @@
 
 use lang\{Reflection, MethodNotImplementedException};
 
-class InstanceDelegate {
-  private $instance;
+class InstanceDelegate extends Delegates {
+  private $instance, $type, $namespace;
 
-  public function __construct(object $instance) {
+  public function __construct(object $instance, ?string $namespace= null) {
     $this->instance= $instance;
+    $this->type= Reflection::type($instance);
+    $this->namespace= $namespace ?? strtolower($this->type->declaredName());
   }
 
-  public function invoke($method, $arguments) {
-    if ($reflect= Reflection::type($this->instance)->method($method)) {
+  public function invoke($tool, $arguments) {
+    sscanf($tool, $this->namespace.'_%s', $method);
+    if ($reflect= $this->type->method($method)) {
       return $reflect->invoke($this->instance, (array)$arguments);
     }
 
     throw new MethodNotImplementedException($method);
   }
 
-  public function tools() {
-    $tools= [];
-    foreach (Reflection::type($this->instance)->methods() as $name => $method) {
+  public function tools(): iterable {
+    foreach ($this->type->methods() as $name => $method) {
       if ($method->annotation(Tool::class)) {
 
         // Use annotated parameters if possible
@@ -34,8 +36,8 @@ class InstanceDelegate {
           $reflect->optional() || $required[]= $param;
         }
 
-        $tools[]= [
-          'name'        => $name,
+        yield [
+          'name'        => $this->namespace.'_'.$name,
           'description' => $method->comment() ?? null,
           'inputSchema' => [
             'type'       => 'object',
@@ -45,6 +47,5 @@ class InstanceDelegate {
         ];
       }
     }
-    return ['tools' => $tools];
   }
 }

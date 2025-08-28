@@ -84,7 +84,10 @@ class McpServer implements Handler, Traceable {
 
           case 'tools/list':
             $response->answer(200);
-            $this->send($response, ['id' => $payload['id'], 'result' => $this->delegates->tools()]);
+            $this->send($response, [
+              'id'     => $payload['id'],
+              'result' => ['tools' => $this->delegates->tools()]
+            ]);
             break;
 
           case 'tools/call':
@@ -99,7 +102,7 @@ class McpServer implements Handler, Traceable {
               $response->answer(400);
               $this->send($response, [
                 'id'    => $payload['id'],
-                'error' => ['code' => -32602, 'message' => $e->getMessage()],
+                'error' => ['code' => -32602, 'message' => $t->getMessage()],
               ]);
             }
             break;
