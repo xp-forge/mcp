@@ -94,7 +94,6 @@ class McpServer implements Handler, Traceable {
 
         switch ($payload['method'] ?? null) {
           case 'initialize':
-            $response->answer(200);
             $response->header('Mcp-Session-Id', uniqid(microtime(true)));
             $this->send($response, ['id' => $payload['id'], 'result' => [
               'capabilities'    => $this->capabilities->struct(),
@@ -112,12 +111,10 @@ class McpServer implements Handler, Traceable {
 
           case 'ping':
           case 'logging/setLevel':
-            $response->answer(200);
             $this->send($response, ['id' => $payload['id'], 'result' => (object)[]]);
             break;
 
           case 'tools/list':
-            $response->answer(200);
             $this->send($response, [
               'id'     => $payload['id'],
               'result' => ['tools' => $this->delegates->tools()],
@@ -127,10 +124,12 @@ class McpServer implements Handler, Traceable {
           case 'tools/call':
             try {
               $result= $this->delegates->invoke($payload['params']['name'], $payload['params']['arguments']);
-              $response->answer(200);
               $this->send($response, [
                 'id'     => $payload['id'],
-                'result' => ['content' => [['type' => 'text', 'text' => Json::of($result)]]],
+                'result' => ['content' => [['type' => 'text', 'text' => is_string($result)
+                  ? $result
+                  : Json::of($result)
+                ]]],
               ]);
             } catch (Throwable $t) {
               $response->answer(400);
@@ -142,7 +141,6 @@ class McpServer implements Handler, Traceable {
             break;
 
           case 'prompts/list':
-            $response->answer(200);
             $this->send($response, [
               'id'     => $payload['id'],
               'result' => ['prompts' => $this->delegates->prompts()],
@@ -152,8 +150,6 @@ class McpServer implements Handler, Traceable {
           case 'prompts/get':
             try {
               $result= $this->delegates->invoke($payload['params']['name'], $payload['params']['arguments']);
-              $response->answer(200);
-
               $this->send($response, ['id' => $payload['id'], 'result' => ['messages' => is_iterable($result)
                 ? $result
                 : [['role' => 'user', 'content' => ['type' => 'text', 'text' => $result]]]
@@ -168,7 +164,6 @@ class McpServer implements Handler, Traceable {
             break;
 
           case 'resources/list':
-            $response->answer(200);
             $this->send($response, [
               'id'     => $payload['id'],
               'result' => ['resources' => $this->delegates->resources(false)],
@@ -176,7 +171,6 @@ class McpServer implements Handler, Traceable {
             break;
 
           case 'resources/templates/list':
-            $response->answer(200);
             $this->send($response, [
               'id'     => $payload['id'],
               'result' => ['resourceTemplates' => $this->delegates->resources(true)],
@@ -186,9 +180,7 @@ class McpServer implements Handler, Traceable {
           case 'resources/read':
             try {
               $contents= $this->delegates->read($payload['params']['uri']);
-              $response->answer(200);
-
-              $this->send($response, ['id' => $payload['id'], 'result' => ['contents' => $contents]]);
+                $this->send($response, ['id' => $payload['id'], 'result' => ['contents' => $contents]]);
             } catch (Throwable $t) {
               $response->answer(400);
               $response->trace('exception', $t);
