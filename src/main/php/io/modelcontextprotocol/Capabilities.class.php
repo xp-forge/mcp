@@ -19,22 +19,28 @@ class Capabilities implements Value {
     $this->struct= $struct;
   }
 
-  /** Creates client capabilities */
-  public static function client(bool $sampling= true, bool $roots= true, ?array $experimental= null): self {
+  /**
+   * Creates client capabilities
+   *
+   * @param  bool|array $sampling
+   * @param  bool|array $roots
+   * @param  bool|array $experimental
+   */
+  public static function client($sampling= true, $roots= true, $experimental= null): self {
     return new self([
-      'sampling'     => $sampling ? (object)[] : null,
-      'roots'        => $roots ? ['listChanged' => true] : null,
-      'experimental' => $experimental,
+      'sampling'     => is_array($sampling) ? $sampling : ($sampling ? (object)[] : null),
+      'roots'        => is_array($roots) ? $roots : ($roots ? (object)[] : null),
+      'experimental' => is_array($experimental) ? $experimental : ($experimental ? (object)[] : null),
     ]);
   }
 
   /** Creates server capabilities */
   public static function server() {
     return new self([
-      'logging'   => (object)[],
+      'logging'   => null,
       'prompts'   => (object)[],
       'resources' => (object)[],
-      'tools'     => ['listChanged' => true],
+      'tools'     => (object)[],
     ]);
   }
 
@@ -51,24 +57,31 @@ class Capabilities implements Value {
   public function setting(string $path) {
     $ptr= &$this->struct;
     foreach (explode('.', $path) as $key) {
-      $ptr= &$ptr[$key];
+      if (is_object($ptr)) {
+        $ptr= &$ptr->{$key};
+      } else {
+        $ptr= &$ptr[$key];
+      }
       if (!isset($ptr)) return null;
     }
     return $ptr;
   }
 
-  public function sampling(bool $support): self {
-    $this->struct['sampling']= $support ? (object)[] : null;
+  /** @param bool|array $support */
+  public function sampling($support): self {
+    $this->struct['sampling']= is_array($support) ? $support : ($support ? (object)[] : null);
     return $this;
   }
 
-  public function roots(bool $support): self {
-    $this->struct['roots']= $support ? ['listChanged' => true] : null;
+  /** @param bool|array $support */
+  public function roots($support): self {
+    $this->struct['roots']= is_array($support) ? $support : ($support ? (object)[] : null);
     return $this;
   }
 
-  public function experimental(array $support): self {
-    $this->struct['experimental']= $support;
+  /** @param bool|array $support */
+  public function experimental($support): self {
+    $this->struct['experimental']= is_array($support) ? $support : ($support ? (object)[] : null);
     return $this;
   }
 

@@ -101,10 +101,10 @@ class McpServerTest {
       "Content-Type: application/json\r\n".
       "Transfer-Encoding: chunked\r\n".
       "\r\n".
-      "cd\r\n".
+      "ae\r\n".
       '{'.
       '"jsonrpc":"2.0","id":"1","result":{'.
-      '"capabilities":{"logging":{},"prompts":{},"resources":{},"tools":{"listChanged":true}},'.
+      '"capabilities":{"prompts":{},"resources":{},"tools":{}},'.
       '"serverInfo":{"name":"XP\/MCP","version":"1.0.0"},'.
       '"protocolVersion":"2025-03-26"'.
       '}}'.
