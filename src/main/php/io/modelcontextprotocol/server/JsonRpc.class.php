@@ -1,5 +1,6 @@
 <?php namespace io\modelcontextprotocol\server;
 
+use Throwable as Any;
 use lang\{Throwable, FormatException, MethodNotImplementedException};
 use text\json\{StreamInput, StreamOutput};
 use util\log\Traceable;
@@ -76,8 +77,8 @@ class JsonRpc implements Handler, Traceable {
 
   /** Handles requests */
   public function handle($request, $response) {
+    $payload= $this->receive($request);
     try {
-      $payload= $this->receive($request);
       $this->cat && $this->cat->debug('>>>', $payload);
 
       foreach ($this->routes as $pattern => $route) {
@@ -108,7 +109,8 @@ class JsonRpc implements Handler, Traceable {
         'code'    => self::METHOD_NOT_FOUND,
         'message' => 'Cannot handle '.$payload['method'],
       ]]);
-    } catch (Throwable $t) {
+    } catch (Any $e) {
+      $t= Throwable::wrap($e);
       $this->cat && $this->cat->warn('<<<', $t);
 
       $response->answer(400);
