@@ -55,7 +55,7 @@ class McpServer implements Handler, Traceable {
         return ['contents' => $contents];
       },
       'notifications/(.*)' => function() {
-        return new Response(202, ['Content-Length' => 0], null);
+        return new Response(202, ['Content-Length' => 0]);
       },
       'ping' => function() {
         return (object)[];
