@@ -107,6 +107,7 @@ class McpServer implements Handler, Traceable {
           case 'notifications/cancelled':
             $response->answer(202);
             $response->header('Content-Length', 0);
+            $response->flush();
             break;
 
           case 'logging/setLevel':
@@ -149,6 +150,7 @@ class McpServer implements Handler, Traceable {
       case 'DELETE /mcp':
         $response->answer(204);
         $response->header('Content-Length', 0);
+        $response->flush();
         break;
 
       default:

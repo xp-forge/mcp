@@ -9,6 +9,23 @@ use web\{Request, Response};
 class McpServerTest {
   private $delegate;
 
+  /** Creates a JSON RPC request with a given message */
+  private function rpcRequest($message): Request {
+    return new Request(new TestInput(
+      'POST',
+      '/mcp',
+      ['Content-Type' => 'application/json'],
+      json_encode(['jsonrpc' => '2.0'] + $message)
+    ));
+  }
+
+  /** Handle request with a given delegate and return response */
+  private function handle(Request $request, $delegate): Response {
+    $response= new Response(new TestOutput());
+    foreach ((new McpServer($delegate))->handle($request, $response) ?? [] as $_) { }
+    return $response;
+  }
+
   #[Before]
   public function delegate() {
     $this->delegate= new class() { };
@@ -26,12 +43,9 @@ class McpServerTest {
 
   #[Test]
   public function receive_json() {
-    $request= new Request(new TestInput('POST', '/mcp', ['Content-Type' => 'application/json'], '{
-      "jsonrpc": "2.0",
-      "method": "initialize"
-    }'));
+    $request= $this->rpcRequest(['id' => '1', 'method' => 'initialize']);
     Assert::equals(
-      ['jsonrpc' => '2.0', 'method' => 'initialize'],
+      ['jsonrpc' => '2.0', 'id' => '1', 'method' => 'initialize'],
       (new McpServer($this->delegate))->receive($request)
     );
   }
@@ -40,7 +54,6 @@ class McpServerTest {
   public function sends_json_chunked() {
     $response= new Response(new TestOutput());
     (new McpServer($this->delegate))->send($response, ['result' => true]);
-
     Assert::equals(
       "1f\r\n".'{"jsonrpc":"2.0","result":true}'."\r\n0\r\n\r\n",
       $response->output()->body()
@@ -51,5 +64,65 @@ class McpServerTest {
   public function raises_error_when_receiving_text() {
     $request= new Request(new TestInput('POST', '/mcp', ['Content-Type' => 'text/plain'], ''));
     (new McpServer($this->delegate))->receive($request);
+  }
+
+  #[Test]
+  public function does_not_support_sse_stream() {
+    $response= $this->handle(new Request(new TestInput('GET', '/mcp')), $this->delegate);
+    Assert::equals(
+      "HTTP/1.1 405 Method Not Allowed\r\n".
+      "Content-Type: text/plain\r\n".
+      "Content-Length: 25\r\n".
+      "\r\n".
+      "SSE streams not supported",
+      $response->output()->bytes()
+    );
+  }
+
+  #[Test]
+  public function supports_delete() {
+    $response= $this->handle(new Request(new TestInput('DELETE', '/mcp')), $this->delegate);
+    Assert::equals(
+      "HTTP/1.1 204 No Content\r\n".
+      "Content-Length: 0\r\n".
+      "\r\n",
+      $response->output()->bytes()
+    );
+  }
+
+  #[Test]
+  public function handles_initialize() {
+    $request= $this->rpcRequest(['id' => '1', 'method' => 'initialize']);
+    $response= $this->handle($request, $this->delegate);
+
+    Assert::equals(
+      "HTTP/1.1 200 OK\r\n".
+      "Mcp-Session-Id: {$response->headers()['Mcp-Session-Id']}\r\n".
+      "Content-Type: application/json\r\n".
+      "Transfer-Encoding: chunked\r\n".
+      "\r\n".
+      "cd\r\n".
+      '{'.
+      '"jsonrpc":"2.0","id":"1","result":{'.
+      '"capabilities":{"logging":{},"prompts":{},"resources":{},"tools":{"listChanged":true}},'.
+      '"serverInfo":{"name":"XP\/MCP","version":"1.0.0"},'.
+      '"protocolVersion":"2025-03-26"'.
+      '}}'.
+      "\r\n0\r\n\r\n",
+      $response->output()->bytes()
+    );
+  }
+
+  #[Test]
+  public function accepts_initialized_notification() {
+    $request= $this->rpcRequest(['id' => '1', 'method' => 'notifications/initialized']);
+    $response= $this->handle($request, $this->delegate);
+
+    Assert::equals(
+      "HTTP/1.1 202 Accepted\r\n".
+      "Content-Length: 0\r\n".
+      "\r\n",
+      $response->output()->bytes()
+    );
   }
 }
