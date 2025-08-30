@@ -13,7 +13,7 @@ class Greetings {
   }
 
   /** Greeting icon */
-  #[Resource('greeting://icon', mimeType: 'image/gif', dynamic: true)]
+  #[Resource(uri: 'greeting://icon', mimeType: 'image/gif', dynamic: true)]
   public function icon() {
     return new Bytes('GIF89...');
   }
