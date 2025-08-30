@@ -3,6 +3,8 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.4.0 / 2025-08-30
+
 * Merged PR #4: Implement MCP server API. This adds support for adding an
   MCP endpoint into an https://github.com/xp-forge/web application.
   (@thekid)
