@@ -1,6 +1,5 @@
 <?php namespace io\modelcontextprotocol\server;
 
-use Throwable as Any;
 use lang\{Throwable, FormatException, MethodNotImplementedException};
 use text\json\{StreamInput, StreamOutput};
 use util\log\Traceable;
