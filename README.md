@@ -10,8 +10,8 @@ Model Context Protocol
 
 Implements the [Model Context Protocol](https://modelcontextprotocol.io/) for the XP Framework.
 
-Example
--------
+Client
+------
 Connecting to an MCP server:
 
 ```php
@@ -26,6 +26,85 @@ $client= new McpClient(['docker', 'run', '--rm', '-i', 'mcp/time']);
 
 $response= $client->call('tools/list');
 Console::writeLine($response->value());
+```
+
+Server
+------
+Uses the [xp-forge/web](https://github.com/xp-forge/web) library:
+
+```php
+use io\modelcontextprotocol\McpServer;
+use io\modelcontextprotocol\server\{Tool, Param, Implementation};
+use web\Application;
+
+class Test extends Application {
+
+  public function routes() {
+    return new McpServer(new #[Implementation('greeting')] class() {
+
+      /** Sends a greeting */
+      #[Tool]
+      public function greet(#[Param('Whom to greet')] $name= null) {
+        return 'Hello, '.($name ?? 'unknown user');
+      }
+    });
+  }
+}
+```
+
+Run this via `xp -supervise web Test`.
+
+Organizing code
+---------------
+MCP tools, resources and prompts may be organized into classes as follows:
+
+```php
+namespace com\example\api;
+
+use io\modelcontextprotocol\server\{Resource, Prompt, Tool, Param, Implementation};
+
+#[Implementation]
+class Greeting {
+
+  /** Dynamic greeting for a user */
+  #[Resource('greeting://user/{name}')]
+  public function get($name) {
+    return "Hello {$name}";
+  }
+
+  /** Greets users */
+  #[Prompt]
+  public function user(
+    #[Param('Whom to greet')] $name,
+    #[Param(type: ['type' => 'string', 'enum' => ['casual', 'friendly']])] $style= 'casual'
+  ) {
+    return "Write a {$style} greeting for {$name}";
+  }
+
+  /** Sends a given greeting by email */
+  #[Tool]
+  public function send(
+    #[Param('Recipient email address')] $recipient,
+    #[Param('The text to send')] $greeting
+  ) {
+    // TBI
+  }
+}}
+```
+
+The web application then becomes this:
+
+```php
+use io\modelcontextprotocol\McpServer;
+use io\modelcontextprotocol\server\ImplementationsIn;
+use web\Application;
+
+class Test extends Application {
+
+  public function routes() {
+    return new McpServer(new ImplementationsIn('com.example.api'));
+  }
+}
 ```
 
 See also

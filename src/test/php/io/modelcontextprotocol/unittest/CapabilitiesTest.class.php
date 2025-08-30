@@ -13,7 +13,7 @@ class CapabilitiesTest {
   #[Test]
   public function client_struct() {
     Assert::equals(
-      ['sampling' => (object)[], 'roots' => ['listChanged' => true]],
+      ['sampling' => (object)[], 'roots' => (object)[]],
       Capabilities::client()->struct()
     );
   }
@@ -21,19 +21,19 @@ class CapabilitiesTest {
   #[Test]
   public function without_sampling() {
     Assert::equals(
-      ['roots' => ['listChanged' => true]],
+      ['roots' => (object)[]],
       Capabilities::client()->sampling(false)->struct()
     );
   }
 
   #[Test]
   public function setting() {
-    Assert::equals(['listChanged' => true], Capabilities::client()->setting('roots'));
+    Assert::equals((object)[], Capabilities::client()->setting('roots'));
   }
 
   #[Test]
   public function setting_path() {
-    Assert::true(Capabilities::client()->setting('roots.listChanged'));
+    Assert::true(Capabilities::client()->roots(['listChanged' => true])->setting('roots.listChanged'));
   }
 
   #[Test]

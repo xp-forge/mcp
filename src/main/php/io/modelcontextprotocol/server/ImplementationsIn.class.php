@@ -1,0 +1,76 @@
+<?php namespace io\modelcontextprotocol\server;
+
+use lang\MethodNotImplementedException;
+use lang\reflection\Package;
+use util\NoSuchElementException;
+
+/** @test io.modelcontextprotocol.unittest.ImplementationsInTest */
+class ImplementationsIn extends Delegates {
+  private $delegates= [];
+  private $instances= [];
+  private $new;
+
+  /**
+   * Creates this delegates instance
+   *
+   * @param  lang.reflection.Package|string $package
+   * @param  function(lang.XPClass): object $new Optional function to create instances
+   */
+  public function __construct($package, $new= null) {
+    $p= $package instanceof Package ? $package : new Package($package);
+    foreach ($p->types() as $type) {
+      if ($impl= $type->annotation(Implementation::class)) {
+        $name= $impl->argument(0) ?? strtolower($type->declaredName());
+        $this->delegates[$name]= $type;
+        $this->instances[$name]= $new ? $new($type->class()) : $type->newInstance();
+      }
+    }
+  }
+
+  public function read($uri) {
+    foreach ($this->delegates as $namespace => $type) {
+      foreach ($type->methods() as $method) {
+        if ($annotation= $method->annotation(Resource::class)) {
+          $resource= $annotation->newInstance();
+          if ($segments= ($resource->matches)($uri)) return $this->contentsOf(
+            $uri,
+            $resource->mimeType,
+            $method->invoke($this->instances[$namespace], (array)$segments)
+          );
+        }
+      }
+    }
+
+    throw new NoSuchElementException($uri);
+  }
+
+  public function invoke($tool, $arguments) {
+    sscanf($tool, '%[^_]_%s', $namespace, $method);
+    if (($type= $this->delegates[$namespace] ?? null) && ($reflect= $type->method($method))) {
+      return $reflect->invoke($this->instances[$namespace], (array)$arguments);
+    }
+
+    throw new MethodNotImplementedException($tool);
+  }
+
+  /** Returns all tools */
+  public function tools(): iterable {
+    foreach ($this->delegates as $namespace => $type) {
+      yield from $this->toolsIn($type, $namespace);
+    }
+  }
+
+  /** Returns all prompts */
+  public function prompts(): iterable {
+    foreach ($this->delegates as $namespace => $type) {
+      yield from $this->promptsIn($type, $namespace);
+    }
+  }
+
+  /** Returns all resources */
+  public function resources(bool $templates): iterable {
+    foreach ($this->delegates as $namespace => $type) {
+      yield from $this->resourcesIn($type, $namespace, $templates);
+    }
+  }
+}
