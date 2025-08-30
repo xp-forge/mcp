@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.5.0 / 2025-08-31
+
+* Merged PR #6: Extract JSON RPC implementation into dedicated class
+  (@thekid)
 * Passed complete response body to `CallFailed` constructor to simplify
   debugging protocol errors
   (@thekid)
