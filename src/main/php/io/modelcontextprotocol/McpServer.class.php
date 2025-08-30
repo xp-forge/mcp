@@ -120,7 +120,7 @@ class McpServer implements Handler, Traceable {
             $response->answer(200);
             $this->send($response, [
               'id'     => $payload['id'],
-              'result' => ['tools' => $this->delegates->tools()]
+              'result' => ['tools' => $this->delegates->tools()],
             ]);
             break;
 
@@ -145,7 +145,7 @@ class McpServer implements Handler, Traceable {
             $response->answer(200);
             $this->send($response, [
               'id'     => $payload['id'],
-              'result' => ['prompts' => $this->delegates->prompts()]
+              'result' => ['prompts' => $this->delegates->prompts()],
             ]);
             break;
 
@@ -160,6 +160,38 @@ class McpServer implements Handler, Traceable {
               ]]);
             } catch (Throwable $t) {
               $response->answer(400);
+              $this->send($response, [
+                'id'    => $payload['id'],
+                'error' => ['code' => -32602, 'message' => $t->getMessage()],
+              ]);
+            }
+            break;
+
+          case 'resources/list':
+            $response->answer(200);
+            $this->send($response, [
+              'id'     => $payload['id'],
+              'result' => ['resources' => $this->delegates->resources(false)],
+            ]);
+            break;
+
+          case 'resources/templates/list':
+            $response->answer(200);
+            $this->send($response, [
+              'id'     => $payload['id'],
+              'result' => ['resourceTemplates' => $this->delegates->resources(true)],
+            ]);
+            break;
+
+          case 'resources/read':
+            try {
+              $contents= $this->delegates->read($payload['params']['uri']);
+              $response->answer(200);
+
+              $this->send($response, ['id' => $payload['id'], 'result' => ['contents' => $contents]]);
+            } catch (Throwable $t) {
+              $response->answer(400);
+              $response->trace('exception', $t);
               $this->send($response, [
                 'id'    => $payload['id'],
                 'error' => ['code' => -32602, 'message' => $t->getMessage()],

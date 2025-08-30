@@ -1,6 +1,7 @@
 <?php namespace io\modelcontextprotocol\server;
 
 use lang\reflection\Type;
+use util\Bytes;
 
 abstract class Delegates {
 
@@ -57,5 +58,27 @@ abstract class Delegates {
         'arguments'   => $arguments,
       ];
     }
+  }
+
+  /** Yields all resources in a given type */
+  protected function resourcesIn(Type $type, string $namespace, bool $templates): iterable {
+    foreach ($type->methods() as $name => $method) {
+      if ($annotation= $method->annotation(Resource::class)) {
+        $resource= $annotation->newInstance();
+        $templates === $resource->template && yield $resource->meta + [
+          'name'        => $namespace.'_'.$name,
+          'description' => $method->comment() ?? null,
+        ];
+      }
+    }
+  }
+
+  protected function contentsOf(string $uri, string $mimeType, $result) {
+    return [
+      ['uri' => $uri, 'mimeType' => $mimeType] + ($result instanceof Bytes
+        ? ['blob' => base64_encode($result)]
+        : ['text' => $result]
+      )
+    ];
   }
 }

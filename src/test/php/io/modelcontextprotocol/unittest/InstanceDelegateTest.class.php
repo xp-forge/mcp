@@ -1,23 +1,34 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
-use io\modelcontextprotocol\server\{InstanceDelegate, Prompt, Param};
+use io\modelcontextprotocol\server\{InstanceDelegate, Tool};
 use test\{Assert, Test};
 
 class InstanceDelegateTest extends DelegatesTest {
 
-  #[Test]
-  public function tools() {
-    Assert::equals(
-      [self::CALCULATOR],
-      [...(new InstanceDelegate(new Calculator()))->tools()]
-    );
+  /** @return io.modelcontextprotocol.server.Delegates */
+  protected function fixture() {
+    return new InstanceDelegate(new Greetings());
   }
 
   #[Test]
-  public function prompts() {
+  public function can_overwrite_namespace() {
+    $impl= new class() {
+
+      #[Tool]
+      public function test() { return 'Test worked'; }
+    };
+
     Assert::equals(
-      [self::GREETINGS],
-      [...(new InstanceDelegate(new Greetings()))->prompts()]
+      [[
+        'name'        => 'tool_test',
+        'description' => null,
+        'inputSchema' => [
+          'type'       => 'object',
+          'properties' => (object)[],
+          'required'   => [],
+        ],
+      ]],
+      [...(new InstanceDelegate($impl, 'tool'))->tools()]
     );
   }
 }

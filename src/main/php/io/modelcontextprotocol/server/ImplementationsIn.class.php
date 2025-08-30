@@ -2,6 +2,7 @@
 
 use lang\MethodNotImplementedException;
 use lang\reflection\Package;
+use util\NoSuchElementException;
 
 /** @test io.modelcontextprotocol.unittest.ImplementationsInTest */
 class ImplementationsIn extends Delegates {
@@ -26,6 +27,23 @@ class ImplementationsIn extends Delegates {
     }
   }
 
+  public function read($uri) {
+    foreach ($this->delegates as $namespace => $type) {
+      foreach ($type->methods() as $method) {
+        if ($annotation= $method->annotation(Resource::class)) {
+          $resource= $annotation->newInstance();
+          if ($segments= ($resource->matches)($uri)) return $this->contentsOf(
+            $uri,
+            $resource->mimeType,
+            $method->invoke($this->instances[$namespace], (array)$segments)
+          );
+        }
+      }
+    }
+
+    throw new NoSuchElementException($uri);
+  }
+
   public function invoke($tool, $arguments) {
     sscanf($tool, '%[^_]_%s', $namespace, $method);
     if (($type= $this->delegates[$namespace] ?? null) && ($reflect= $type->method($method))) {
@@ -46,6 +64,13 @@ class ImplementationsIn extends Delegates {
   public function prompts(): iterable {
     foreach ($this->delegates as $namespace => $type) {
       yield from $this->promptsIn($type, $namespace);
+    }
+  }
+
+  /** Returns all resources */
+  public function resources(bool $templates): iterable {
+    foreach ($this->delegates as $namespace => $type) {
+      yield from $this->resourcesIn($type, $namespace, $templates);
     }
   }
 }
