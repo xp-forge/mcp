@@ -41,7 +41,7 @@ class StreamableHttp extends Transport {
    */
   public function notify($method) {
     $response= $this->endpoint->resource('/mcp')->post(['jsonrpc' => '2.0', 'method' => $method], self::JSON);
-    if (202 !== $response->status()) throw new CallFailed($response->status(), $response->error());
+    if (202 !== $response->status()) throw new CallFailed($response->status(), $response->content());
   }
 
   /**
@@ -84,7 +84,7 @@ class StreamableHttp extends Transport {
       yield 'terminated' => $session;
       goto call;
     } else {
-      yield $response->status() => $response->error();
+      yield $response->status() => $response->content();
     }
   }
 

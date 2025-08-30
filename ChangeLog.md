@@ -3,6 +3,9 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Passed complete response body to `CallFailed` constructor to simplify
+  debugging protocol errors
+  (@thekid)
 * Bumped default protocol version to `2025-06-18`, pass negotiated
   version via `MCP-Protocol-Version` when using HTTP.
   (@thekid)
