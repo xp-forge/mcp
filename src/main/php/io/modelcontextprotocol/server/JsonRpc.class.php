@@ -44,7 +44,9 @@ class JsonRpc implements Handler, Traceable {
    * @return void
    */
   private function send($response, $id, $result) {
+    $response->answer(200);
     $response->header('Content-Type', self::JSON);
+
     $output= new StreamOutput($response->stream());
     try {
       $output->write(['jsonrpc' => '2.0', 'id' => $id, 'result' => $result]);
@@ -64,6 +66,7 @@ class JsonRpc implements Handler, Traceable {
   private function error($response, $id, $code, $message) {
     $response->answer(400);
     $response->header('Content-Type', self::JSON);
+
     $output= new StreamOutput($response->stream());
     try {
       $output->write(['jsonrpc' => '2.0', 'id' => $id, 'error' => ['code' => $code, 'message' => $message]]);
