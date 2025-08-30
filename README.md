@@ -110,6 +110,7 @@ class Test extends Application {
 See also
 --------
 * https://github.com/modelcontextprotocol/servers
+* https://modelcontextprotocol.io/docs/learn/server-concepts
 * https://modelcontextprotocol.io/specification/2025-06-18
 * https://deadprogrammersociety.com/2025/03/calling-mcp-servers-the-hard-way.html
 * https://blog.christianposta.com/understanding-mcp-authorization-with-dynamic-client-registration/

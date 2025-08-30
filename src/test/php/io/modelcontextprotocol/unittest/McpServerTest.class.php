@@ -91,6 +91,19 @@ class McpServerTest {
   }
 
   #[Test]
+  public function does_not_support_patch() {
+    $response= $this->handle(new Request(new TestInput('PATCH', '/mcp')), $this->delegate);
+    Assert::equals(
+      "HTTP/1.1 404 Not Found\r\n".
+      "Content-Type: text/plain\r\n".
+      "Content-Length: 39\r\n".
+      "\r\n".
+      "MCP server cannot handle PATCH requests",
+      $response->output()->bytes()
+    );
+  }
+
+  #[Test]
   public function handles_initialize() {
     $request= $this->rpcRequest(['id' => '1', 'method' => 'initialize']);
     $response= $this->handle($request, $this->delegate);
@@ -141,5 +154,11 @@ class McpServerTest {
       "\r\n0\r\n\r\n",
       $response->output()->bytes()
     );
+  }
+
+  #[Test]
+  public function supports_arbitrary_paths() {
+    $request= $this->rpcRequest(['id' => '1', 'method' => 'ping'])->rewrite('/beta/mcp');
+    Assert::equals(200, $this->handle($request, $this->delegate)->status());
   }
 }

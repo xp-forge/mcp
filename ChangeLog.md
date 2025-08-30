@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Fixed issue #5: Mounting MCP servers to subpaths. Accomplished by
+  delegating this to the routing mechanism
+  (@thekid)
+
 ## 0.4.0 / 2025-08-30
 
 * Merged PR #4: Implement MCP server API. This adds support for adding an

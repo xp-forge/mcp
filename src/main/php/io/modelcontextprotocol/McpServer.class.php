@@ -76,14 +76,13 @@ class McpServer implements Handler, Traceable {
    * @return var
    */
   public function handle($request, $response) {
-    $route= $request->method().' '.rtrim($request->uri()->path(), '/');
-    switch ($route) {
-      case 'GET /mcp':
+    switch ($request->method()) {
+      case 'GET':
         $response->answer(405);
         $response->send('SSE streams not supported', 'text/plain');
         break;
 
-      case 'POST /mcp':
+      case 'POST':
         try {
           $payload= $this->receive($request);
         } catch (FormatException $e) {
@@ -199,7 +198,7 @@ class McpServer implements Handler, Traceable {
         }
         break;
 
-      case 'DELETE /mcp':
+      case 'DELETE':
         $response->answer(204);
         $response->header('Content-Length', 0);
         $response->flush();
@@ -207,7 +206,7 @@ class McpServer implements Handler, Traceable {
 
       default:
         $response->answer(404);
-        $response->send('Cannot handle '.$route, 'text/plain');
+        $response->send("MCP server cannot handle {$request->method()} requests", 'text/plain');
         break;
     }
   }
