@@ -9,8 +9,10 @@ class Greetings {
   #[Prompt]
   public function get(
     #[Param('Whom to greet')]
-    $name
+    $name,
+    #[Param(type: ['type' => 'string', 'enum' => ['casual', 'friendly']])]
+    $style= 'casual'
   ) {
-    return "Hello {$name}";
+    return "Write a {$style} greeting for {$name}";
   }
 }

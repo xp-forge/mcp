@@ -16,12 +16,19 @@ abstract class DelegatesTest {
   const GREETINGS= [
     'name'        => 'greetings_get',
     'description' => 'Gets greeting',
-    'arguments' => [[
-      'name'        => 'name',
-      'description' => 'Whom to greet',
-      'required'    => true,
-      'schema'      => ['type' => 'string'],
-    ]],
+    'arguments' => [
+      [
+        'name'        => 'name',
+        'description' => 'Whom to greet',
+        'required'    => true,
+        'schema'      => ['type' => 'string'],
+      ],
+      [
+        'name'        => 'style',
+        'description' => 'Style',
+        'required'    => false,
+        'schema'      => ['type' => 'string', 'enum' => ['casual', 'friendly']],
+      ],
+    ],
   ];
-
 }
