@@ -60,7 +60,8 @@ class JsonRpc implements Handler, Traceable {
    *
    * @param  web.Response $response
    * @param  int|string $id
-   * @param  var $result
+   * @param  int $code
+   * @param  string $message
    * @return void
    */
   private function error($response, $id, $code, $message) {
