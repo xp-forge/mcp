@@ -1,16 +1,17 @@
-<?php namespace io\modelcontextprotocol\server;
+<?php namespace io\modelcontextprotocol;
 
 use Throwable;
-use io\modelcontextprotocol\Capabilities;
+use io\modelcontextprotocol\server\{Delegates, InstanceDelegate};
 use lang\FormatException;
 use text\json\{Json, StreamInput, StreamOutput};
 use util\log\Traceable;
 use web\Handler;
 
+/** @test io.modelcontextprotocol.unittest.McpServerTest */
 class McpServer implements Handler, Traceable {
   const JSON= 'application/json';
 
-  private $delegates;
+  private $delegates, $version, $capabilities;
   private $cat= null;
 
   public function __construct($arg, string $version= '2025-03-26') {
@@ -18,6 +19,12 @@ class McpServer implements Handler, Traceable {
     $this->version= $version;
     $this->capabilities= Capabilities::server();
   }
+
+  /** @return string */
+  public function version() { return $this->version; }
+
+  /** @return io.modelcontextprotocol.Capabilities */
+  public function capabilities() { return $this->capabilities; }
 
   /** @param util.log.LogCategory $cat */
   public function setTrace($cat) {
@@ -31,7 +38,7 @@ class McpServer implements Handler, Traceable {
    * @return var
    * @throws lang.FormatException
    */
-  private function receive($request) {
+  public function receive($request) {
     $header= $request->header('Content-Type');
     if (0 !== strncmp($header, self::JSON, strcspn($header, ';'))) {
       throw new FormatException('Expected '.self::JSON.', have '.$header);
@@ -49,7 +56,7 @@ class McpServer implements Handler, Traceable {
    * @param  var $answer
    * @return void
    */
-  private function send($response, $answer) {
+  public function send($response, $answer) {
     $payload= ['jsonrpc' => '2.0'] + $answer;
     $response->header('Content-Type', self::JSON);
 
