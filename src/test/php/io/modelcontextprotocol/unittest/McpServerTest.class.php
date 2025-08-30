@@ -136,4 +136,23 @@ class McpServerTest {
     $request= $this->rpcRequest(['id' => '1', 'method' => 'ping'])->rewrite('/beta/mcp');
     Assert::equals(200, $this->handle($request, $this->delegate)->status());
   }
+
+  #[Test]
+  public function handles_invalid_json() {
+    $request= new Request(new TestInput(
+      'POST',
+      '/mcp',
+      ['Content-Type' => 'application/json'],
+      'this.is.not.json'
+    ));
+    $response= $this->handle($request, $this->delegate);
+    Assert::equals(
+      "HTTP/1.1 400 Bad Request\r\n".
+      "Content-Type: text/plain\r\n".
+      "Content-Length: 74\r\n".
+      "\r\n".
+      'lang.FormatException (Unexpected token ["this.is.not.json"] reading value)',
+      $response->output()->bytes()
+    );
+  }
 }

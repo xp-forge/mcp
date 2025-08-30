@@ -1,7 +1,7 @@
 <?php namespace io\modelcontextprotocol;
 
-use Throwable;
 use io\modelcontextprotocol\server\{Delegates, InstanceDelegate, JsonRpc, Response};
+use lang\FormatException;
 use text\json\Json;
 use util\log\Traceable;
 use web\Handler;
@@ -85,8 +85,8 @@ class McpServer implements Handler, Traceable {
       case 'POST':
         try {
           return $this->rpc->handle($request, $response);
-        } catch (Throwable $t) {
-          $response->answer(500);
+        } catch (FormatException $t) {
+          $response->answer(400);
           $response->send(nameof($t)." ({$t->getMessage()})", 'text/plain');
         }
         break;
