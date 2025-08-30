@@ -3,7 +3,7 @@
 use Throwable;
 use io\modelcontextprotocol\server\{Delegates, InstanceDelegate};
 use lang\FormatException;
-use text\json\{StreamInput, StreamOutput};
+use text\json\{Json, StreamInput, StreamOutput};
 use util\log\Traceable;
 use web\Handler;
 
@@ -132,6 +132,32 @@ class McpServer implements Handler, Traceable {
                 'id'     => $payload['id'],
                 'result' => ['content' => [['type' => 'text', 'text' => Json::of($result)]]],
               ]);
+            } catch (Throwable $t) {
+              $response->answer(400);
+              $this->send($response, [
+                'id'    => $payload['id'],
+                'error' => ['code' => -32602, 'message' => $t->getMessage()],
+              ]);
+            }
+            break;
+
+          case 'prompts/list':
+            $response->answer(200);
+            $this->send($response, [
+              'id'     => $payload['id'],
+              'result' => ['prompts' => $this->delegates->prompts()]
+            ]);
+            break;
+
+          case 'prompts/get':
+            try {
+              $result= $this->delegates->invoke($payload['params']['name'], $payload['params']['arguments']);
+              $response->answer(200);
+
+              $this->send($response, ['id' => $payload['id'], 'result' => ['messages' => is_iterable($result)
+                ? $result
+                : [['role' => 'user', 'content' => ['type' => 'text', 'text' => $result]]]
+              ]]);
             } catch (Throwable $t) {
               $response->answer(400);
               $this->send($response, [

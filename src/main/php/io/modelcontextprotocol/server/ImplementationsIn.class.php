@@ -40,4 +40,11 @@ class ImplementationsIn extends Delegates {
       yield from $this->toolsIn($type, $namespace);
     }
   }
+
+  /** Returns all prompts */
+  public function prompts(): iterable {
+    foreach ($this->delegates as $namespace => $type) {
+      yield from $this->promptsIn($type, $namespace);
+    }
+  }
 }

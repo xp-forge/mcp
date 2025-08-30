@@ -2,19 +2,19 @@
 
 use lang\{Reflection, MethodNotImplementedException};
 
+/** @test io.modelcontextprotocol.unittest.InstanceDelegateTest */
 class InstanceDelegate extends Delegates {
   private $instance, $type;
   private $namespace= null;
 
-  public function __construct(object $instance) {
+  public function __construct(object $instance, ?string $namespace= null) {
     $this->instance= $instance;
     $this->type= Reflection::type($instance);
-
-    // Derive name from annotation if present
-    if ($impl= $this->type->annotation(Implementation::class)) {
-      $this->namespace= $impl->argument(0);
-    }
-    $this->namespace??= strtolower($this->type->declaredName());
+    $this->namespace= (
+      $namespace ??
+      (($impl= $this->type->annotation(Implementation::class)) ? $impl->argument(0) : null) ??
+      strtolower($this->type->declaredName())
+    );
   }
 
   public function invoke($tool, $arguments) {
@@ -29,5 +29,10 @@ class InstanceDelegate extends Delegates {
   /** Returns all tools */
   public function tools(): iterable {
     yield from $this->toolsIn($this->type, $this->namespace);
+  }
+
+  /** Returns all prompts */
+  public function prompts(): iterable {
+    yield from $this->promptsIn($this->type, $this->namespace);
   }
 }

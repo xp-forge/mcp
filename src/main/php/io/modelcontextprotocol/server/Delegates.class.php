@@ -4,11 +4,10 @@ use lang\reflection\Type;
 
 abstract class Delegates {
 
+  /** Yields all tools in a given type */
   protected function toolsIn(Type $type, string $namespace): iterable {
     foreach ($type->methods() as $name => $method) {
       if ($method->annotation(Tool::class)) {
-
-        // Use annotated parameters if possible
         $properties= $required= [];
         foreach ($method->parameters() as $param => $reflect) {
           $annotations= $reflect->annotations();
@@ -26,8 +25,39 @@ abstract class Delegates {
           'inputSchema' => [
             'type'       => 'object',
             'properties' => $properties ?: (object)[],
-            'required'   => [],
+            'required'   => $required,
           ],
+        ];
+      }
+    }
+  }
+
+  /** Yields all prompts in a given type */
+  protected function promptsIn(Type $type, string $namespace): iterable {
+    foreach ($type->methods() as $name => $method) {
+      if ($method->annotation(Prompt::class)) {
+        $arguments= [];
+        foreach ($method->parameters() as $param => $reflect) {
+          if ($annotation= $reflect->annotation(Param::class)) {
+            $schema= $annotation->newInstance()->schema();
+            $description= $schema['description'] ?? null;
+            unset($schema['description']);
+          } else {
+            $schema= [];
+            $description= null;
+          }
+          $arguments[]= [
+            'name'        => $param,
+            'description' => $description ?? ucfirst($param),
+            'required'    => !$reflect->optional(),
+            'schema'      => $schema ?? ['type' => 'string'],
+          ];
+        }
+
+        yield [
+          'name'        => $namespace.'_'.$name,
+          'description' => $method->comment() ?? null,
+          'arguments'   => $arguments,
         ];
       }
     }
