@@ -42,31 +42,6 @@ class McpServerTest {
   }
 
   #[Test]
-  public function receive_json() {
-    $request= $this->rpcRequest(['id' => '1', 'method' => 'initialize']);
-    Assert::equals(
-      ['jsonrpc' => '2.0', 'id' => '1', 'method' => 'initialize'],
-      (new McpServer($this->delegate))->receive($request)
-    );
-  }
-
-  #[Test]
-  public function sends_json_chunked() {
-    $response= new Response(new TestOutput());
-    (new McpServer($this->delegate))->send($response, ['result' => true]);
-    Assert::equals(
-      "1f\r\n".'{"jsonrpc":"2.0","result":true}'."\r\n0\r\n\r\n",
-      $response->output()->body()
-    );
-  }
-
-  #[Test, Expect(class: FormatException::class, message: 'Expected application/json, have text/plain')]
-  public function raises_error_when_receiving_text() {
-    $request= new Request(new TestInput('POST', '/mcp', ['Content-Type' => 'text/plain'], ''));
-    (new McpServer($this->delegate))->receive($request);
-  }
-
-  #[Test]
   public function does_not_support_sse_stream() {
     $response= $this->handle(new Request(new TestInput('GET', '/mcp')), $this->delegate);
     Assert::equals(
@@ -160,5 +135,24 @@ class McpServerTest {
   public function supports_arbitrary_paths() {
     $request= $this->rpcRequest(['id' => '1', 'method' => 'ping'])->rewrite('/beta/mcp');
     Assert::equals(200, $this->handle($request, $this->delegate)->status());
+  }
+
+  #[Test]
+  public function invalid_content_type() {
+    $request= new Request(new TestInput(
+      'POST',
+      '/mcp',
+      ['Content-Type' => 'text/plain'],
+      'this.is.not.json'
+    ));
+    $response= $this->handle($request, $this->delegate);
+    Assert::equals(
+      "HTTP/1.1 400 Bad Request\r\n".
+      "Content-Type: text/plain\r\n".
+      "Content-Length: 65\r\n".
+      "\r\n".
+      "lang.FormatException (Expected application/json, have text/plain)",
+      $response->output()->bytes()
+    );
   }
 }
