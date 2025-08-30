@@ -18,7 +18,7 @@ class McpClient implements Traceable {
    * @param  string|array|util.URI|io.modelcontextprotocol.Transport $endpoint
    * @param  string $version
    */
-  public function __construct($endpoint, string $version= '2025-03-26') {
+  public function __construct($endpoint, string $version= '2025-06-18') {
     $this->transport= $endpoint instanceof Transport ? $endpoint : Transport::for($endpoint);
     $this->version= $version;
     $this->capabilities= Capabilities::client();
@@ -51,14 +51,20 @@ class McpClient implements Traceable {
       'capabilities'    => $this->capabilities->struct(),
     ]);
 
-    // TODO: Decide how to handle protocol version negotiation.
-
     // After successful initialization, the client MUST send an initialized
     // notification to indicate it is ready to begin normal operations.
     switch ($init->key()) {
-      case 'result': $this->transport->notify('notifications/initialized'); return $init->current();
-      case 'authorize': return Authorization::parse($init->current());
-      default: $init->throw(new CallFailed($init->key(), $init->current()));
+      case 'result':
+        $result= $init->current();
+        $this->transport->version($result->value()['protocolVersion'] ?? $this->version);
+        $this->transport->notify('notifications/initialized');
+        return $result;
+
+      case 'authorize':
+        return Authorization::parse($init->current());
+
+      default:
+        return $init->throw(new CallFailed($init->key(), $init->current()));
     }
   }
 

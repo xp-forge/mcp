@@ -14,7 +14,7 @@ class McpServer implements Handler, Traceable {
   private $delegates, $version, $capabilities;
   private $cat= null;
 
-  public function __construct($arg, string $version= '2025-03-26') {
+  public function __construct($arg, string $version= '2025-06-18') {
     $this->delegates= $arg instanceof Delegates ? $arg : new InstanceDelegate($arg);
     $this->version= $version;
     $this->capabilities= Capabilities::server();

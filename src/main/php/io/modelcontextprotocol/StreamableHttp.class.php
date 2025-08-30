@@ -27,6 +27,11 @@ class StreamableHttp extends Transport {
     $this->endpoint->setTrace($cat);
   }
 
+  /** @param string $version */ 
+  public function version($version) {
+    $this->endpoint->with(['MCP-Protocol-Version' => $version]);
+  }
+
   /**
    * Sends a notification
    *

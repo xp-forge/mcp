@@ -7,6 +7,9 @@ use util\log\Traceable;
 /** @test io.modelcontextprotocol.unittest.TransportTest */
 abstract class Transport implements Closeable, Traceable {
 
+  /** @param string $version */ 
+  public abstract function version($version);
+
   /**
    * Sends a notification
    *

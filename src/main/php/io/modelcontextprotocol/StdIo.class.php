@@ -33,6 +33,11 @@ class StdIo extends Transport {
     $this->cat= $cat;
   }
 
+  /** @param string $version */ 
+  public function version($version) {
+    // Not applicable for this implementation
+  }
+
   /**
    * Sends the given payload as JSON-RPC 2.0 message to the process' standard input.
    *

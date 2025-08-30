@@ -3,6 +3,9 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Bumped default protocol version to `2025-06-18`, pass negotiated
+  version via `MCP-Protocol-Version` when using HTTP.
+  (@thekid)
 * Fixed issue #5: Mounting MCP servers to subpaths. Accomplished by
   delegating this to the routing mechanism
   (@thekid)

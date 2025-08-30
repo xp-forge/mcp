@@ -33,7 +33,7 @@ class McpServerTest {
 
   #[Test]
   public function default_version() {
-    Assert::equals('2025-03-26', (new McpServer($this->delegate))->version());
+    Assert::equals('2025-06-18', (new McpServer($this->delegate))->version());
   }
 
   #[Test]
@@ -119,7 +119,7 @@ class McpServerTest {
       '"jsonrpc":"2.0","id":"1","result":{'.
       '"capabilities":{"prompts":{},"resources":{},"tools":{}},'.
       '"serverInfo":{"name":"XP\/MCP","version":"1.0.0"},'.
-      '"protocolVersion":"2025-03-26"'.
+      '"protocolVersion":"2025-06-18"'.
       '}}'.
       "\r\n0\r\n\r\n",
       $response->output()->bytes()

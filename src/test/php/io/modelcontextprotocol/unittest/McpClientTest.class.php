@@ -8,7 +8,7 @@ class McpClientTest {
 
   #[Test]
   public function default_version() {
-    Assert::equals('2025-03-26', (new McpClient(self::ENDPOINT))->version());
+    Assert::equals('2025-06-18', (new McpClient(self::ENDPOINT))->version());
   }
 
   #[Test]
@@ -45,6 +45,8 @@ class McpClientTest {
       }
 
       public function setTrace($cat) { }
+
+      public function version($version) { }
 
       public function notify($method) {
         $this->sent[]= ['notify' => $method];
