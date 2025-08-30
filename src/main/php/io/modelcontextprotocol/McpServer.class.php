@@ -39,8 +39,8 @@ class McpServer implements Handler, Traceable {
    * @throws lang.FormatException
    */
   public function receive($request) {
-    $header= $request->header('Content-Type');
-    if (0 !== strncmp($header, self::JSON, strcspn($header, ';'))) {
+    $header= $request->header('Content-Type') ?? '';
+    if (0 !== strncmp($header, self::JSON, strlen(self::JSON))) {
       throw new FormatException('Expected '.self::JSON.', have '.$header);
     }
 
