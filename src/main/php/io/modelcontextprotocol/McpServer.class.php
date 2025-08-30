@@ -3,7 +3,7 @@
 use Throwable;
 use io\modelcontextprotocol\server\{Delegates, InstanceDelegate};
 use lang\FormatException;
-use text\json\{Json, StreamInput, StreamOutput};
+use text\json\{StreamInput, StreamOutput};
 use util\log\Traceable;
 use web\Handler;
 
@@ -44,7 +44,9 @@ class McpServer implements Handler, Traceable {
       throw new FormatException('Expected '.self::JSON.', have '.$header);
     }
 
-    $payload= Json::read(new StreamInput($request->stream()));
+    $input= new StreamInput($request->stream());
+    $payload= $input->read();
+    $input->close();
     $this->cat && $this->cat->debug('>>>', $payload);
     return $payload;
   }
@@ -60,7 +62,9 @@ class McpServer implements Handler, Traceable {
     $payload= ['jsonrpc' => '2.0'] + $answer;
     $response->header('Content-Type', self::JSON);
 
-    Json::write($payload, new StreamOutput($response->stream()));
+    $output= new StreamOutput($response->stream());
+    $output->write($payload);
+    $output->close();
     $this->cat && $this->cat->debug('<<<', $payload);
   }
 
