@@ -34,7 +34,7 @@ Uses the [xp-forge/web](https://github.com/xp-forge/web) library:
 
 ```php
 use io\modelcontextprotocol\McpServer;
-use io\modelcontextprotocol\server\{Tool, Param, Implementation, McpServer};
+use io\modelcontextprotocol\server\{Tool, Param, Implementation};
 use web\Application;
 
 class Test extends Application {
@@ -83,7 +83,7 @@ class Greeting {
 
   /** Sends a given greeting by email */
   #[Tool]
-  public function send(#[Param]
+  public function send(
     #[Param('Recipient email address')] $recipient,
     #[Param('The text to send')] $greeting
   ) {
