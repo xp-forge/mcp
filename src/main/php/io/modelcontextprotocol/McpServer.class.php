@@ -110,6 +110,7 @@ class McpServer implements Handler, Traceable {
             $response->flush();
             break;
 
+          case 'ping':
           case 'logging/setLevel':
             $response->answer(200);
             $this->send($response, ['id' => $payload['id'], 'result' => (object)[]]);
@@ -142,6 +143,7 @@ class McpServer implements Handler, Traceable {
 
           default:
             $response->answer(400);
+            $response->trace('unhandled', $payload);
             $this->send($response, ['id' => $payload['id'], 'error' => 'unknown_method']);
             break;
         }

@@ -125,4 +125,21 @@ class McpServerTest {
       $response->output()->bytes()
     );
   }
+
+  #[Test]
+  public function responds_to_pings() {
+    $request= $this->rpcRequest(['id' => '1', 'method' => 'ping']);
+    $response= $this->handle($request, $this->delegate);
+
+    Assert::equals(
+      "HTTP/1.1 200 OK\r\n".
+      "Content-Type: application/json\r\n".
+      "Transfer-Encoding: chunked\r\n".
+      "\r\n".
+      "26\r\n".
+      '{"jsonrpc":"2.0","id":"1","result":{}}'.
+      "\r\n0\r\n\r\n",
+      $response->output()->bytes()
+    );
+  }
 }
