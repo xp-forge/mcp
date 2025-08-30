@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Merged PR #4: Implement MCP server API. This adds support for adding an
+  MCP endpoint into an https://github.com/xp-forge/web application.
+  (@thekid)
+
 ## 0.3.0 / 2025-08-23
 
 * Merged PR #3: Return an *Authorization* instance from `initialize()`
