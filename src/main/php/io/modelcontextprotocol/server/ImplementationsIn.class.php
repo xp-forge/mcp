@@ -3,6 +3,7 @@
 use lang\MethodNotImplementedException;
 use lang\reflection\Package;
 
+/** @test io.modelcontextprotocol.unittest.ImplementationsInTest */
 class ImplementationsIn extends Delegates {
   private $delegates= [];
   private $instances= [];

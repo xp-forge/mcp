@@ -1,15 +1,15 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
-use io\modelcontextprotocol\server\{InstanceDelegate, Prompt, Param};
+use io\modelcontextprotocol\server\ImplementationsIn;
 use test\{Assert, Test};
 
-class InstanceDelegateTest extends DelegatesTest {
+class ImplementationsInTest extends DelegatesTest {
 
   #[Test]
   public function tools() {
     Assert::equals(
       [self::CALCULATOR],
-      [...(new InstanceDelegate(new Calculator()))->tools()]
+      [...(new ImplementationsIn('io.modelcontextprotocol.unittest'))->tools()]
     );
   }
 
@@ -17,7 +17,7 @@ class InstanceDelegateTest extends DelegatesTest {
   public function prompts() {
     Assert::equals(
       [self::GREETINGS],
-      [...(new InstanceDelegate(new Greetings()))->prompts()]
+      [...(new ImplementationsIn('io.modelcontextprotocol.unittest'))->prompts()]
     );
   }
 }
