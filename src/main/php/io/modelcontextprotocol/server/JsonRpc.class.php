@@ -36,40 +36,37 @@ class JsonRpc implements Handler, Traceable {
   }
 
   /**
-   * Receive JSON RPC payload from the request
+   * Sends a result via JSON RPC to the response
    *
-   * @param  web.Request $request
-   * @return var
-   * @throws lang.FormatException
+   * @param  web.Response $response
+   * @param  int|string $id
+   * @param  var $result
+   * @return void
    */
-  public function receive($request) {
-    $header= $request->header('Content-Type') ?? '';
-    if (0 !== strncmp($header, self::JSON, strlen(self::JSON))) {
-      throw new FormatException('Expected '.self::JSON.', have '.$header);
-    }
-
-    $input= new StreamInput($request->stream());
+  private function send($response, $id, $result) {
+    $response->header('Content-Type', self::JSON);
+    $output= new StreamOutput($response->stream());
     try {
-      return $input->read();
+      $output->write(['jsonrpc' => '2.0', 'id' => $id, 'result' => $result]);
     } finally {
-      $input->close();
+      $output->close();
     }
   }
 
   /**
-   * Sends an answer via JSON RPC to the response
+   * Sends an error via JSON RPC to the response
    *
    * @param  web.Response $response
-   * @param  var $answer
+   * @param  int|string $id
+   * @param  var $result
    * @return void
    */
-  public function send($response, $answer) {
-    $payload= ['jsonrpc' => '2.0'] + $answer;
+  private function error($response, $id, $code, $message) {
+    $response->answer(400);
     $response->header('Content-Type', self::JSON);
-
     $output= new StreamOutput($response->stream());
     try {
-      $output->write($payload);
+      $output->write(['jsonrpc' => '2.0', 'id' => $id, 'error' => ['code' => $code, 'message' => $message]]);
     } finally {
       $output->close();
     }
@@ -77,8 +74,14 @@ class JsonRpc implements Handler, Traceable {
 
   /** Handles requests */
   public function handle($request, $response) {
-    $payload= $this->receive($request);
+    $header= $request->header('Content-Type') ?? '';
+    if (0 !== strncmp($header, self::JSON, strlen(self::JSON))) {
+      throw new FormatException('Expected '.self::JSON.', have '.$header);
+    }
+
+    $input= new StreamInput($request->stream());
     try {
+      $payload= $input->read();
       $this->cat && $this->cat->debug('>>>', $payload);
 
       foreach ($this->routes as $pattern => $route) {
@@ -94,30 +97,25 @@ class JsonRpc implements Handler, Traceable {
             if (null === $result->value) {
               $response->flush();
             } else {
-              $this->send($response, ['id' => $payload['id'], 'result' => $result->value]);
+              $this->send($response, $payload['id'], $result->value);
             }
           } else {
-            $this->send($response, ['id' => $payload['id'], 'result' => $result]);
+            $this->send($response, $payload['id'], $result);
           }
           return;
         }
       }
 
       $this->cat && $this->cat->warn('<<<', 'Unhandled', array_keys($this->routes));
-      $response->answer(400);
-      $this->send($response, ['id' => $payload['id'] ?? null, 'error' => [
-        'code'    => self::METHOD_NOT_FOUND,
-        'message' => 'Cannot handle '.$payload['method'],
-      ]]);
+      $this->error($response, $payload['id'], self::METHOD_NOT_FOUND, $payload['method']);
+    } catch (FormatException $e) {
+      $this->cat && $this->cat->warn('<<<', $e);
+      $this->error($response, $payload['id'] ?? null, self::PARSE_ERROR, $e->getMessage());
     } catch (Any $e) {
-      $t= Throwable::wrap($e);
-      $this->cat && $this->cat->warn('<<<', $t);
-
-      $response->answer(400);
-      $this->send($response, ['id' => $payload['id'] ?? null, 'error' => [
-        'code'    => self::INVALID_REQUEST,
-        'message' => $t->getMessage(),
-      ]]);
+      $this->cat && $this->cat->warn('<<<', Throwable::wrap($e));
+      $this->error($response, $payload['id'] ?? null, self::INVALID_REQUEST, $e->getMessage());
+    } finally {
+      $input->close();
     }
   }
 }

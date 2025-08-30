@@ -138,20 +138,20 @@ class McpServerTest {
   }
 
   #[Test]
-  public function handles_invalid_json() {
+  public function invalid_content_type() {
     $request= new Request(new TestInput(
       'POST',
       '/mcp',
-      ['Content-Type' => 'application/json'],
+      ['Content-Type' => 'text/plain'],
       'this.is.not.json'
     ));
     $response= $this->handle($request, $this->delegate);
     Assert::equals(
       "HTTP/1.1 400 Bad Request\r\n".
       "Content-Type: text/plain\r\n".
-      "Content-Length: 74\r\n".
+      "Content-Length: 65\r\n".
       "\r\n".
-      'lang.FormatException (Unexpected token ["this.is.not.json"] reading value)',
+      "lang.FormatException (Expected application/json, have text/plain)",
       $response->output()->bytes()
     );
   }
