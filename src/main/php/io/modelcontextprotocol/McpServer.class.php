@@ -1,20 +1,29 @@
 <?php namespace io\modelcontextprotocol;
 
-use io\modelcontextprotocol\server\{Delegates, InstanceDelegate, JsonRpc, Response};
+use io\modelcontextprotocol\server\{Delegate, Delegates, InstanceDelegate, JsonRpc, Response};
 use lang\FormatException;
 use text\json\Json;
+use util\NoSuchElementException;
 use util\log\Traceable;
 use web\Handler;
 
 /** @test io.modelcontextprotocol.unittest.McpServerTest */
 class McpServer implements Handler, Traceable {
-  private $delegates, $version, $capabilities, $rpc;
+  private $delegate, $version, $capabilities, $rpc;
   private $cat= null;
 
   public function __construct($arg, string $version= '2025-06-18') {
-    $this->delegates= $arg instanceof Delegates ? $arg : new InstanceDelegate($arg);
+    if ($arg instanceof Delegate) {
+      $this->delegate= $arg;
+    } else if (is_array($arg)) {
+      $this->delegate= new Delegates(...$arg);
+    } else {
+      $this->delegate= new InstanceDelegate($arg);
+    }
+
     $this->version= $version;
     $this->capabilities= Capabilities::server();
+
     $this->rpc= new JsonRpc([
       'initialize' => function() {
         return new Response(200, ['Mcp-Session-Id' => uniqid(microtime(true))], [
@@ -24,34 +33,42 @@ class McpServer implements Handler, Traceable {
         ]);
       },
       'tools/list' => function() {
-        return ['tools' => $this->delegates->tools()];
+        return ['tools' => $this->delegate->tools()];
       },
       'prompts/list' => function() {
-        return ['prompts' => $this->delegates->prompts()];
+        return ['prompts' => $this->delegate->prompts()];
       },
       'resources/list' => function() {
-        return ['resources' => $this->delegates->resources(false)];
+        return ['resources' => $this->delegate->resources(false)];
       },
       'resources/templates/list' => function() {
-        return ['resourceTemplates' => $this->delegates->resources(true)];
+        return ['resourceTemplates' => $this->delegate->resources(true)];
       },
       'tools/call' => function($payload) {
-        $result= $this->delegates->invoke($payload['params']['name'], $payload['params']['arguments']);
-        return ['content' => [['type' => 'text', 'text' => is_string($result)
-          ? $result
-          : Json::of($result)
-        ]]];
+        if ($invokeable= $this->delegate->invokeable($payload['params']['name'])) {
+          $result= $invokeable((array)$payload['params']['arguments']);
+          return ['content' => [['type' => 'text', 'text' => is_string($result)
+            ? $result
+            : Json::of($result)
+          ]]];
+        }
+        throw new NoSuchElementException($payload['params']['name']);
       },
       'prompts/get' => function($payload) {
-        $result= $this->delegates->invoke($payload['params']['name'], $payload['params']['arguments']);
-        return ['messages' => is_iterable($result)
-          ? $result
-          : [['role' => 'user', 'content' => ['type' => 'text', 'text' => $result]]]
-        ];
+        if ($invokeable= $this->delegate->invokeable($payload['params']['name'])) {
+          $result= $invokeable((array)$payload['params']['arguments']);
+          return ['messages' => is_iterable($result)
+            ? $result
+            : [['role' => 'user', 'content' => ['type' => 'text', 'text' => $result]]]
+          ];
+        }
+        throw new NoSuchElementException($payload['params']['name']);
       },
       'resources/read' => function($payload) {
-        $contents= $this->delegates->read($payload['params']['uri']);
-        return ['contents' => $contents];
+        if ($contents= $this->delegate->readable($payload['params']['uri'])) {
+          return ['contents' => $contents];
+        }
+        throw new NoSuchElementException($payload['params']['uri']);
       },
       'notifications/(.*)' => function() {
         return new Response(202, ['Content-Length' => 0]);
@@ -62,8 +79,8 @@ class McpServer implements Handler, Traceable {
     ]);
   }
 
-  /** @return io.modelcontextprotocol.server.Delegates */
-  public function delegates() { return $this->delegates; }
+  /** @return io.modelcontextprotocol.server.Delegate */
+  public function delegate() { return $this->delegate; }
 
   /** @return string */
   public function version() { return $this->version; }
