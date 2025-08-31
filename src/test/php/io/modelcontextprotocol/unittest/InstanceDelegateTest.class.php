@@ -3,9 +3,9 @@
 use io\modelcontextprotocol\server\{InstanceDelegate, Tool};
 use test\{Assert, Test};
 
-class InstanceDelegateTest extends DelegatesTest {
+class InstanceDelegateTest extends DelegateTest {
 
-  /** @return io.modelcontextprotocol.server.Delegates */
+  /** @return io.modelcontextprotocol.server.Delegate */
   protected function fixture() {
     return new InstanceDelegate(new Greetings());
   }
