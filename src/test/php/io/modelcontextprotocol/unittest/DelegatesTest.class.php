@@ -1,111 +1,67 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
-use test\{Assert, Expect, Test};
-use util\NoSuchElementException;
+use io\modelcontextprotocol\server\{Delegates, Tool, Param};
+use test\{Assert, Test};
 
-abstract class DelegatesTest {
+class DelegatesTest extends DelegateTest {
 
   /** @return io.modelcontextprotocol.server.Delegates */
-  protected abstract function fixture();
-
-  #[Test]
-  public function tools() {
-    Assert::equals(
-      [[
-        'name'        => 'greetings_repeat',
-        'description' => 'Repeats a given greeting',
-        'inputSchema' => [
-          'type'       => 'object',
-          'properties' => [
-            'greeting' => ['type' => 'string'],
-            'times'    => ['type' => 'number'],
-          ],
-          'required' => ['greeting', 'times'],
-        ]
-      ]],
-      [...$this->fixture()->tools()]
-    );
+  protected function fixture() {
+    return new Delegates([new Greetings()]);
   }
 
   #[Test]
-  public function prompts() {
-    Assert::equals(
-      [[
-        'name'        => 'greetings_user',
-        'description' => 'Greets users',
-        'arguments' => [
-          [
-            'name'        => 'name',
-            'description' => 'Whom to greet',
-            'required'    => true,
-            'schema'      => ['type' => 'string'],
-          ],
-          [
-            'name'        => 'style',
-            'description' => 'Style',
-            'required'    => false,
-            'schema'      => ['type' => 'string', 'enum' => ['casual', 'friendly']],
-          ],
-        ],
-      ]],
-      [...$this->fixture()->prompts()]
-    );
-  }
+  public function includes_tools_of_all_delegates() {
+    $fixture= new Delegates([
+      'basic' => new class() {
+        #[Tool]
+        public function add(
+          #[Param(type: 'number')]
+          $a,
+          #[Param(type: 'number')]
+          $b
+        ) {
+          return $a + $b;
+        }
+      },
+      'statistics' => new class() {
+        #[Tool]
+        public function average(
+          #[Param(type: ['type' => 'array', 'items' => 'number'])]
+          $numbers
+        ) {
+          return array_sum($numbers) / sizeof($numbers);
+        }
+      }
+    ]);
 
-  #[Test]
-  public function resources() {
     Assert::equals(
       [
         [
-          'uri'         => 'greeting://default',
-          'name'        => 'greetings_default',
-          'description' => 'Default greeting',
-          'mimeType'    => 'text/plain',
-          'dynamic'     => false,
+          'name'        => 'basic_add',
+          'description' => null,
+          'inputSchema' => [
+            'type'       => 'object',
+            'properties' => [
+              'a' => ['type' => 'number'],
+              'b' => ['type' => 'number'],
+            ],
+            'required'   => ['a', 'b'],
+          ]
         ],
         [
-          'uri'         => 'greeting://icon',
-          'name'        => 'greetings_icon',
-          'description' => 'Greeting icon',
-          'mimeType'    => 'image/gif',
-          'dynamic'     => true,
-        ]
+          'name'        => 'statistics_average',
+          'description' => null,
+          'inputSchema' => [
+            'type'       => 'object',
+            'properties' => [
+              'numbers' => ['type' => 'array', 'items' => 'number'],
+            ],
+            'required'   => ['numbers'],
+          ]
+        ],
       ],
-      [...$this->fixture()->resources(false)]
+      [...$fixture->tools()]
     );
-  }
-
-  #[Test]
-  public function resource_templates() {
-    Assert::equals(
-      [[
-        'uriTemplate' => 'greeting://user/{name}',
-        'name'        => 'greetings_get',
-        'description' => 'Dynamic greeting for a user',
-        'mimeType'    => 'text/plain',
-      ]],
-      [...$this->fixture()->resources(true)]
-    );
-  }
-
-  #[Test]
-  public function read_text_resource() {
-    Assert::equals(
-      [['uri' => 'greeting://default', 'mimeType' => 'text/plain', 'text' => 'Hello']],
-      $this->fixture()->read('greeting://default')
-    );
-  }
-
-  #[Test]
-  public function read_binary_resource() {
-    Assert::equals(
-      [['uri' => 'greeting://icon', 'mimeType' => 'image/gif', 'blob' => 'R0lGODkuLi4=']],
-      $this->fixture()->read('greeting://icon')
-    );
-  }
-
-  #[Test, Expect(NoSuchElementException::class)]
-  public function read_non_existant_resource() {
-    $this->fixture()->read('greeting://non-existant');
   }
 }

@@ -1,10 +1,9 @@
 <?php namespace io\modelcontextprotocol\server;
 
-use lang\{Reflection, MethodNotImplementedException};
-use util\NoSuchElementException;
+use lang\Reflection;
 
 /** @test io.modelcontextprotocol.unittest.InstanceDelegateTest */
-class InstanceDelegate extends Delegates {
+class InstanceDelegate extends Delegate {
   private $instance, $type;
   private $namespace= null;
 
@@ -18,7 +17,7 @@ class InstanceDelegate extends Delegates {
     );
   }
 
-  public function read($uri) {
+  public function readable($uri) {
     foreach ($this->type->methods() as $method) {
       if ($annotation= $method->annotation(Resource::class)) {
         $resource= $annotation->newInstance();
@@ -29,17 +28,15 @@ class InstanceDelegate extends Delegates {
         );
       }
     }
-
-    throw new NoSuchElementException($uri);
+    return null;
   }
 
-  public function invoke($tool, $arguments) {
+  public function invokeable($tool) {
     sscanf($tool, $this->namespace.'_%s', $method);
     if ($reflect= $this->type->method($method)) {
-      return $reflect->invoke($this->instance, (array)$arguments);
+      return fn($arguments) => $reflect->invoke($this->instance, $arguments);
     }
-
-    throw new MethodNotImplementedException($tool);
+    return null;
   }
 
   /** Returns all tools */

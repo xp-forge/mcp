@@ -3,10 +3,10 @@
 use io\modelcontextprotocol\server\ImplementationsIn;
 use test\{Assert, Test};
 
-class ImplementationsInTest extends DelegatesTest {
+class ImplementationsInTest extends DelegateTest {
   const PACKAGE= 'io.modelcontextprotocol.unittest';
 
-  /** @return io.modelcontextprotocol.server.Delegates */
+  /** @return io.modelcontextprotocol.server.Delegate */
   protected function fixture() {
     return new ImplementationsIn(self::PACKAGE);
   }
