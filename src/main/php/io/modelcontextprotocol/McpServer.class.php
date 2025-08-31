@@ -62,6 +62,9 @@ class McpServer implements Handler, Traceable {
     ]);
   }
 
+  /** @return io.modelcontextprotocol.server.Delegates */
+  public function delegates() { return $this->delegates; }
+
   /** @return string */
   public function version() { return $this->version; }
 

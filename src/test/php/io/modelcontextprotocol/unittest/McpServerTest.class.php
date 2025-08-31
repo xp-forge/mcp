@@ -1,5 +1,6 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
+use io\modelcontextprotocol\server\{InstanceDelegate, ImplementationsIn};
 use io\modelcontextprotocol\{Capabilities, McpServer};
 use lang\FormatException;
 use test\{Assert, Before, Expect, Test};
@@ -29,6 +30,17 @@ class McpServerTest {
   #[Before]
   public function delegate() {
     $this->delegate= new class() { };
+  }
+
+  #[Test]
+  public function delegates() {
+    $delegates= new ImplementationsIn('io.modelcontextprotocol.unittest');
+    Assert::equals($delegates, (new McpServer($delegates))->delegates());
+  }
+
+  #[Test]
+  public function instance_delegate_for_objects() {
+    Assert::equals(new InstanceDelegate($this->delegate), (new McpServer($this->delegate))->delegates());
   }
 
   #[Test]
