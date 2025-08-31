@@ -3,6 +3,8 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Merged PR #7: Support multiple delegates via `Delegates` class
+  (@thekid)
 * Added string representations for errors, results and event streams
   (@thekid)
 
