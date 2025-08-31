@@ -1,29 +1,34 @@
 <?php namespace io\modelcontextprotocol;
 
-use IteratorAggregate;
-use lang\FormatException;
+use Traversable;
 use util\Objects;
 
-/** @test io.modelcontextprotocol.unittest.ResultTest */
-abstract class Result implements IteratorAggregate {
+/** A single result value */
+class Result extends Outcome {
+  private $value;
 
-  /** @return var */
-  public abstract function value();
+  /** @param [:var] $value JSON-RPC result member */
+  public function __construct($value) { $this->value= $value; }
+
+  /** Yields the underlying value */
+  public function getIterator(): Traversable { yield 'value' => $this; }
+
+  /** Returns the underlying value */
+  public function value() { return $this->value; }
+
+  /** @return string */
+  public function toString() { return nameof($this).'('.Objects::stringOf($this->value).')'; }
+
+  /** @return string */
+  public function hashCode() { return 'R'.Objects::hashOf($this->value); }
 
   /**
-   * Creates a result from a JSON-RPC message, which is either a `Value` or an `Error`.
+   * Comparison
    *
-   * @param  [:var] $message
-   * @return self
-   * @throws lang.FormatException
+   * @param  var $value
+   * @return int
    */
-  public static function from(array $message) {
-    if ($result= $message['result'] ?? null) {
-      return new Value($result);
-    } else if ($error= $message['error'] ?? null) {
-      return new Error($error['code'], $error['message']);
-    }
-
-    throw new FormatException('Expected result or error, have '.Objects::stringOf($message));
+  public function compareTo($value) {
+    return $value instanceof self ? Objects::compare($this->value, $value->value) : 1;
   }
 }

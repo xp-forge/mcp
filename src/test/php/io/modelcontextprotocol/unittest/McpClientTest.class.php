@@ -1,6 +1,6 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
-use io\modelcontextprotocol\{Capabilities, McpClient, Transport, StreamableHttp, Value};
+use io\modelcontextprotocol\{Capabilities, McpClient, Transport, StreamableHttp, Result};
 use test\{Assert, Test};
 
 class McpClientTest {
@@ -56,7 +56,7 @@ class McpClientTest {
         $this->sent[]= ['call' => $method, 'params' => $params];
 
         // See https://modelcontextprotocol.io/specification/2025-03-26/basic/lifecycle
-        yield 'result' => new Value([
+        yield 'result' => new Result([
           'protocolVersion' => $this->version,
           'serverInfo'      => ['name' => 'XP/MCP', 'version' => '1.0.0'],
           'capabilities'    => $this->capabilities->struct(),

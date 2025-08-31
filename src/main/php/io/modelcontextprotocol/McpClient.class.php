@@ -44,7 +44,7 @@ class McpClient implements Traceable {
    * @see    https://modelcontextprotocol.io/specification/2025-03-26/basic/lifecycle#lifecycle-phases
    * @throws io.modelcontextprotocol.CallFailed
    */
-  public function initialize(): Result {
+  public function initialize(): Outcome {
     $init= $this->transport->call('initialize', [
       'protocolVersion' => $this->version,
       'clientInfo'      => ['name' => 'XP/MCP', 'version' => '1.0.0'],
@@ -75,7 +75,7 @@ class McpClient implements Traceable {
    * @param  ?[:var] $params
    * @throws io.modelcontextprotocol.CallFailed
    */
-  public function call($method, $params= null): Result {
+  public function call($method, $params= null): Outcome {
     $this->server??= $this->initialize()->value();
     foreach ($this->transport->call($method, $params) as $op => $result) {
       switch ($op) {

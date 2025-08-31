@@ -3,6 +3,9 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Added string representations for errors, results and event streams
+  (@thekid)
+
 ## 0.5.0 / 2025-08-31
 
 * Merged PR #6: Extract JSON RPC implementation into dedicated class

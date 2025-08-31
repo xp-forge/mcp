@@ -84,7 +84,7 @@ class StdIo extends Transport {
     $this->buffer= substr($this->buffer, $p);
     $this->cat && $this->cat->debug('<<<', $response);
 
-    yield 'result' => Result::from(json_decode($response, true));
+    yield 'result' => Outcome::from(json_decode($response, true));
   }
 
   /** @return void */

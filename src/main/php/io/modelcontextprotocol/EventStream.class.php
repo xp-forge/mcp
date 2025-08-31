@@ -3,7 +3,7 @@
 use Traversable;
 use io\streams\{InputStream, StringReader};
 
-class EventStream extends Result {
+class EventStream extends Outcome {
   private $stream;
 
   /** Creates a new event stream */
@@ -22,7 +22,7 @@ class EventStream extends Result {
       if (0 === strncmp($line, 'event: ', 6)) {
         $event= substr($line, 7);
       } else if (0 === strncmp($line, 'data: ', 5)) {
-        yield $event => Result::from(json_decode(substr($line, 6), true));
+        yield $event => Outcome::from(json_decode(substr($line, 6), true));
         $event= null;
       }
     }
@@ -32,5 +32,24 @@ class EventStream extends Result {
   public function value() {
     $it= $this->getIterator();
     return $it->valid() ? $it->current()->value() : null;
+  }
+
+  /** @return string */
+  public function toString() { return nameof($this).'('.$this->stream->toString().')'; }
+
+  /** @return string */
+  public function hashCode() { return 'S'.$this->stream->hashCode(); }
+
+  /**
+   * Comparison
+   *
+   * @param  var $value
+   * @return int
+   */
+  public function compareTo($value) {
+    return $value instanceof self
+      ? $this->stream->compareTo($value->stream)
+      : 1
+    ;
   }
 }

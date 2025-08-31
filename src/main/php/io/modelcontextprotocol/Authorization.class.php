@@ -11,7 +11,7 @@ use lang\FormatException;
  * @see  https://blog.christianposta.com/understanding-mcp-authorization-with-dynamic-client-registration/
  * @test io.modelcontextprotocol.unittest.AuthorizationTest
  */
-class Authorization extends Result {
+class Authorization extends Outcome {
   public $scheme, $parameters;
 
   public function __construct(string $scheme, array $parameters) {
@@ -77,5 +77,24 @@ class Authorization extends Result {
   /** Returns the underlying value */
   public function value() {
     throw new CallFailed(401, $this->header());
+  }
+
+  /** @return string */
+  public function toString() { return nameof($this).'('.$this->header().')'; }
+
+  /** @return string */
+  public function hashCode() { return 'E'.md5($this->header()); }
+
+  /**
+   * Comparison
+   *
+   * @param  var $value
+   * @return int
+   */
+  public function compareTo($value) {
+    return $value instanceof self
+      ? $this->header() <=> $value->header()
+      : 1
+    ;
   }
 }
