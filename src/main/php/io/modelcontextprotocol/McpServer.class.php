@@ -15,11 +15,11 @@ class McpServer implements Handler, Traceable {
   /**
    * Creates a new MCP server
    *
-   * @param  object|array|io.modelcontextprotocol.server.Delegate $arg
+   * @param  object|array|string|io.modelcontextprotocol.server.Delegate $delegate
    * @param  string $version
    */
-  public function __construct($arg, string $version= '2025-06-18') {
-    $this->delegate= Delegate::from($arg);
+  public function __construct($delegate, string $version= '2025-06-18') {
+    $this->delegate= Delegate::from($delegate);
     $this->version= $version;
     $this->capabilities= Capabilities::server();
     $this->rpc= new JsonRpc([

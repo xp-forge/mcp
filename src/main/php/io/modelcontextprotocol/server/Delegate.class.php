@@ -6,12 +6,14 @@ use util\Bytes;
 /** Base class for InstanceDelegate, Delegates and ImplementationsIn */ 
 abstract class Delegate {
 
-  /** @param object|array|io.modelcontextprotocol.server.Delegate $arg */
+  /** @param object|array|string|io.modelcontextprotocol.server.Delegate $arg */
   public static function from($arg): self {
     if ($arg instanceof self) {
       return $arg;
     } else if (is_array($arg)) {
       return new Delegates($arg);
+    } else if (is_string($arg)) {
+      return new ImplementationsIn($arg);
     } else {
       return new InstanceDelegate($arg);
     }

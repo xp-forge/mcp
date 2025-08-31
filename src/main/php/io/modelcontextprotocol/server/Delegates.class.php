@@ -4,7 +4,7 @@
 class Delegates extends Delegate {
   private $delegates= [];
 
-  /** @param (object|array|io.modelcontextprotocol.server.Delegate)[]|[:object] $args */
+  /** @param (object|array|string|io.modelcontextprotocol.server.Delegate)[]|[:object] $args */
   public function __construct(array $args) {
     if (0 === key($args)) {
       foreach ($args as $arg) {

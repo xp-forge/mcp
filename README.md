@@ -34,20 +34,22 @@ Uses the [xp-forge/web](https://github.com/xp-forge/web) library:
 
 ```php
 use io\modelcontextprotocol\McpServer;
-use io\modelcontextprotocol\server\{Tool, Param, Implementation};
+use io\modelcontextprotocol\server\{Tool, Param};
 use web\Application;
 
 class Test extends Application {
 
   public function routes() {
-    return new McpServer(new #[Implementation('greeting')] class() {
+    return new McpServer([
+      'greeting' => new class() {
 
-      /** Sends a greeting */
-      #[Tool]
-      public function greet(#[Param('Whom to greet')] $name= null) {
-        return 'Hello, '.($name ?? 'unknown user');
+        /** Sends a greeting */
+        #[Tool]
+        public function greet(#[Param('Whom to greet')] $name= null) {
+          return 'Hello, '.($name ?? 'unknown user');
+        }
       }
-    });
+    ]);
   }
 }
 ```
@@ -96,13 +98,12 @@ The web application then becomes this:
 
 ```php
 use io\modelcontextprotocol\McpServer;
-use io\modelcontextprotocol\server\ImplementationsIn;
 use web\Application;
 
 class Test extends Application {
 
   public function routes() {
-    return new McpServer(new ImplementationsIn('com.example.api'));
+    return new McpServer('com.example.api');
   }
 }
 ```

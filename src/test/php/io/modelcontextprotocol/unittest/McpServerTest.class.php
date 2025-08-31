@@ -8,6 +8,8 @@ use web\io\{TestInput, TestOutput};
 use web\{Request, Response};
 
 class McpServerTest {
+  const PACKAGE= 'io.modelcontextprotocol.unittest';
+
   private $delegate;
 
   /** Creates a JSON RPC request with a given message */
@@ -34,7 +36,7 @@ class McpServerTest {
 
   #[Test]
   public function delegate_instance() {
-    $delegate= new ImplementationsIn('io.modelcontextprotocol.unittest');
+    $delegate= new ImplementationsIn(self::PACKAGE);
     Assert::equals($delegate, (new McpServer($delegate))->delegate());
   }
 
@@ -45,8 +47,13 @@ class McpServerTest {
 
   #[Test]
   public function delegates_for_arrays() {
-    $list= [new InstanceDelegate($this->delegate), new ImplementationsIn('io.modelcontextprotocol.unittest')];
+    $list= [new InstanceDelegate($this->delegate), new ImplementationsIn(self::PACKAGE)];
     Assert::equals(new Delegates($list), (new McpServer($list))->delegate());
+  }
+
+  #[Test]
+  public function delegates_for_strings() {
+    Assert::equals(new ImplementationsIn(self::PACKAGE), (new McpServer(self::PACKAGE))->delegate());
   }
 
   #[Test]
