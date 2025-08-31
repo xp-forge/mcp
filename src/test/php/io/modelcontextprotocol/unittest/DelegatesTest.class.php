@@ -1,42 +1,39 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
-use io\modelcontextprotocol\server\{Delegates, InstanceDelegate, Tool, Param};
+use io\modelcontextprotocol\server\{Delegates, Tool, Param};
 use test\{Assert, Test};
 
 class DelegatesTest extends DelegateTest {
 
   /** @return io.modelcontextprotocol.server.Delegates */
   protected function fixture() {
-    return new Delegates(new InstanceDelegate(new Greetings()));
+    return new Delegates([new Greetings()]);
   }
 
   #[Test]
   public function includes_tools_of_all_delegates() {
-    $basic= new class() {
-      #[Tool]
-      public function add(
-        #[Param(type: 'number')]
-        $a,
-        #[Param(type: 'number')]
-        $b
-      ) {
-        return $a + $b;
+    $fixture= new Delegates([
+      'basic' => new class() {
+        #[Tool]
+        public function add(
+          #[Param(type: 'number')]
+          $a,
+          #[Param(type: 'number')]
+          $b
+        ) {
+          return $a + $b;
+        }
+      },
+      'statistics' => new class() {
+        #[Tool]
+        public function average(
+          #[Param(type: ['type' => 'array', 'items' => 'number'])]
+          $numbers
+        ) {
+          return array_sum($numbers) / sizeof($numbers);
+        }
       }
-    };
-    $statistics= new class() {
-      #[Tool]
-      public function average(
-        #[Param(type: ['type' => 'array', 'items' => 'number'])]
-        $numbers
-      ) {
-        return array_sum($numbers) / sizeof($numbers);
-      }
-    };
-
-    $fixture= new Delegates(
-      new InstanceDelegate($basic, 'basic'),
-      new InstanceDelegate($statistics, 'statistics'),
-    );
+    ]);
 
     Assert::equals(
       [

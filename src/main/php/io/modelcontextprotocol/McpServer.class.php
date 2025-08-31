@@ -1,6 +1,6 @@
 <?php namespace io\modelcontextprotocol;
 
-use io\modelcontextprotocol\server\{Delegate, Delegates, InstanceDelegate, JsonRpc, Response};
+use io\modelcontextprotocol\server\{Delegate, JsonRpc, Response};
 use lang\FormatException;
 use text\json\Json;
 use util\NoSuchElementException;
@@ -12,18 +12,16 @@ class McpServer implements Handler, Traceable {
   private $delegate, $version, $capabilities, $rpc;
   private $cat= null;
 
+  /**
+   * Creates a new MCP server
+   *
+   * @param  object|array|io.modelcontextprotocol.server.Delegate $arg
+   * @param  string $version
+   */
   public function __construct($arg, string $version= '2025-06-18') {
-    if ($arg instanceof Delegate) {
-      $this->delegate= $arg;
-    } else if (is_array($arg)) {
-      $this->delegate= new Delegates(...$arg);
-    } else {
-      $this->delegate= new InstanceDelegate($arg);
-    }
-
+    $this->delegate= Delegate::from($arg);
     $this->version= $version;
     $this->capabilities= Capabilities::server();
-
     $this->rpc= new JsonRpc([
       'initialize' => function() {
         return new Response(200, ['Mcp-Session-Id' => uniqid(microtime(true))], [

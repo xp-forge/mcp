@@ -46,7 +46,7 @@ class McpServerTest {
   #[Test]
   public function delegates_for_arrays() {
     $list= [new InstanceDelegate($this->delegate), new ImplementationsIn('io.modelcontextprotocol.unittest')];
-    Assert::equals(new Delegates(...$list), (new McpServer($list))->delegate());
+    Assert::equals(new Delegates($list), (new McpServer($list))->delegate());
   }
 
   #[Test]

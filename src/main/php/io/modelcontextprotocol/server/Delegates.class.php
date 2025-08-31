@@ -2,10 +2,19 @@
 
 /** @see io.modelcontextprotocol.unittest.DelegatesTest */
 class Delegates extends Delegate {
-  private $delegates;
+  private $delegates= [];
 
-  public function __construct(parent... $delegates) {
-    $this->delegates= $delegates;
+  /** @param (object|array|io.modelcontextprotocol.server.Delegate)[]|[:object] $args */
+  public function __construct(array $args) {
+    if (0 === key($args)) {
+      foreach ($args as $arg) {
+        $this->delegates[]= parent::from($arg);
+      }
+    } else {
+      foreach ($args as $namespace => $arg) {
+        $this->delegates[]= new InstanceDelegate($arg, $namespace);
+      }
+    }
   }
 
   /** Finds a readable resource */
