@@ -1,13 +1,12 @@
 <?php namespace io\modelcontextprotocol\server;
 
+/** @see https://json-schema.org/understanding-json-schema/reference */
 class Param {
   private $description, $type;
 
   /**
    * Creates a new param annotation
    *
-   * @see    https://json-schema.org/understanding-json-schema/reference/type
-   * @see    https://json-schema.org/understanding-json-schema/reference/enum
    * @param  ?string $description
    * @param  string|[:var] $type
    */
