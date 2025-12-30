@@ -21,10 +21,10 @@ class InstanceDelegate extends Delegate {
     foreach ($this->type->methods() as $method) {
       if ($annotation= $method->annotation(Resource::class)) {
         $resource= $annotation->newInstance();
-        if ($segments= ($resource->matches)($uri)) return $this->contentsOf(
+        if ($segments= ($resource->matches)($uri)) return fn($arguments, $request) => $this->contentsOf(
           $uri,
           $resource->mimeType,
-          $method->invoke($this->instance, (array)$segments)
+          $this->access($this->instance, $method, $arguments, $request->pass('segments', $segments))
         );
       }
     }
@@ -34,7 +34,7 @@ class InstanceDelegate extends Delegate {
   public function invokeable($tool) {
     sscanf($tool, $this->namespace.'_%s', $method);
     if ($reflect= $this->type->method($method)) {
-      return fn($arguments) => $reflect->invoke($this->instance, $arguments);
+      return fn($arguments, $request) => $this->access($this->instance, $reflect, $arguments, $request);
     }
     return null;
   }

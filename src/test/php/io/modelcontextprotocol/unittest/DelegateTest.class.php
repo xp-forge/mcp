@@ -1,6 +1,8 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
 use test\{Assert, Expect, Test};
+use web\Request;
+use web\io\TestInput;
 
 abstract class DelegateTest {
 
@@ -91,7 +93,7 @@ abstract class DelegateTest {
   public function read_text_resource() {
     Assert::equals(
       [['uri' => 'greeting://default', 'mimeType' => 'text/plain', 'text' => 'Hello']],
-      $this->fixture()->readable('greeting://default')
+      $this->fixture()->readable('greeting://default')([], new Request(new TestInput('GET', '/')))
     );
   }
 
@@ -99,7 +101,15 @@ abstract class DelegateTest {
   public function read_binary_resource() {
     Assert::equals(
       [['uri' => 'greeting://icon', 'mimeType' => 'image/gif', 'blob' => 'R0lGODkuLi4=']],
-      $this->fixture()->readable('greeting://icon')
+      $this->fixture()->readable('greeting://icon')([], new Request(new TestInput('GET', '/')))
+    );
+  }
+
+  #[Test]
+  public function read_resource_template() {
+    Assert::equals(
+      [['uri' => 'greeting://user/test', 'mimeType' => 'text/plain', 'text' => 'Hello test']],
+      $this->fixture()->readable('greeting://user/test')([], new Request(new TestInput('GET', '/')))
     );
   }
 

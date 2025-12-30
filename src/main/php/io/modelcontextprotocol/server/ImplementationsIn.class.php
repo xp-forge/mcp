@@ -30,10 +30,10 @@ class ImplementationsIn extends Delegate {
       foreach ($type->methods() as $method) {
         if ($annotation= $method->annotation(Resource::class)) {
           $resource= $annotation->newInstance();
-          if ($segments= ($resource->matches)($uri)) return $this->contentsOf(
+          if ($segments= ($resource->matches)($uri)) return fn($arguments, $request) => $this->contentsOf(
             $uri,
             $resource->mimeType,
-            $method->invoke($this->instances[$namespace], (array)$segments)
+            $this->access($this->instances[$namespace], $method, $arguments, $request->pass('segments', $segments))
           );
         }
       }
@@ -44,7 +44,7 @@ class ImplementationsIn extends Delegate {
   public function invokeable($tool) {
     sscanf($tool, '%[^_]_%s', $namespace, $method);
     if (($type= $this->delegates[$namespace] ?? null) && ($reflect= $type->method($method))) {
-      return fn($arguments) => $reflect->invoke($this->instances[$namespace], $arguments);
+      return fn($arguments, $request) => $this->access($this->instances[$namespace], $reflect, $arguments, $request);
     }
     return null;
   }

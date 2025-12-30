@@ -1,6 +1,6 @@
 <?php namespace io\modelcontextprotocol\server;
 
-use lang\reflection\Type;
+use lang\reflection\{Type, TargetException};
 use util\Bytes;
 
 /** Base class for InstanceDelegate, Delegates and ImplementationsIn */ 
@@ -111,5 +111,28 @@ abstract class Delegate {
         : ['text' => $result]
       )
     ];
+  }
+
+  /** Access a given method */
+  protected function access($instance, $method, $arguments, $request) {
+    $pass= [];
+    $values= null;
+    foreach ($method->parameters() as $param => $reflect) {
+      if ($reflect->annotation(Param::class)) {
+        $pass[]= $arguments[$param] ?? $reflect->default();
+      } else if ($reflect->annotation(Value::class)) {
+        $values ?? $values= $request->values();
+        $pass[]= $values[$param] ?? $reflect->default();
+      } else {
+        $values ?? $values= $request->values();
+        $pass[]= $values['segments'][$param] ?? $reflect->default();
+      }
+    }
+
+    try {
+      return $method->invoke($instance, $pass);
+    } catch (TargetException $e) {
+      throw $e->getCause();
+    }
   }
 }
