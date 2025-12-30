@@ -23,6 +23,17 @@ abstract class DelegateTest {
           ],
           'required' => ['greeting', 'times'],
         ]
+      ], [
+        'name'        => 'greetings_send',
+        'description' => 'Sends a given greeting',
+        'inputSchema' => [
+          'type'       => 'object',
+          'properties' => [
+            'greeting'  => ['type' => 'string'],
+            'recipient' => ['type' => 'string'],
+          ],
+          'required' => ['greeting', 'recipient'],
+        ]
       ]],
       [...$this->fixture()->tools()]
     );

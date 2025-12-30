@@ -1,6 +1,6 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
-use io\modelcontextprotocol\server\{Implementation, Resource, Prompt, Tool, Param};
+use io\modelcontextprotocol\server\{Implementation, Resource, Prompt, Tool, Param, Value};
 use util\Bytes;
 
 #[Implementation]
@@ -44,5 +44,18 @@ class Greetings {
     $times
   ) {
     return str_repeat($greeting, $times);
+  }
+
+  /** Sends a given greeting */
+  #[Tool]
+  public function send(
+    #[Value]
+    $user,
+    #[Param]
+    $greeting,
+    #[Param]
+    $recipient
+  ) {
+    // TBI: Send email
   }
 }

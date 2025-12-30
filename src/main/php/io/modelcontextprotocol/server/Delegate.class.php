@@ -41,7 +41,9 @@ abstract class Delegate {
       $properties= $required= [];
       foreach ($method->parameters() as $param => $reflect) {
         $annotations= $reflect->annotations();
-        if ($annotation= $annotations->type(Param::class)) {
+        if ($annotations->provides(Value::class)) {
+          continue;
+        } else if ($annotation= $annotations->type(Param::class)) {
           $properties[$param]= $annotation->newInstance()->schema();
         } else {
           $properties[$param]= ['type' => 'string', 'description' => ucfirst($param)];
