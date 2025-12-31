@@ -14,6 +14,8 @@ class DelegatesTest extends DelegateTest {
   public function includes_tools_of_all_delegates() {
     $fixture= new Delegates([
       'basic' => new class() {
+
+        /** Calculates sum of the given numbers */
         #[Tool]
         public function add(
           #[Param(type: 'number')]
@@ -25,6 +27,8 @@ class DelegatesTest extends DelegateTest {
         }
       },
       'statistics' => new class() {
+
+        /** Calculates average of the given numbers */
         #[Tool]
         public function average(
           #[Param(type: ['type' => 'array', 'items' => 'number'])]
@@ -39,7 +43,7 @@ class DelegatesTest extends DelegateTest {
       [
         [
           'name'        => 'basic_add',
-          'description' => null,
+          'description' => 'Calculates sum of the given numbers',
           'inputSchema' => [
             'type'       => 'object',
             'properties' => [
@@ -51,7 +55,7 @@ class DelegatesTest extends DelegateTest {
         ],
         [
           'name'        => 'statistics_average',
-          'description' => null,
+          'description' => 'Calculates average of the given numbers',
           'inputSchema' => [
             'type'       => 'object',
             'properties' => [

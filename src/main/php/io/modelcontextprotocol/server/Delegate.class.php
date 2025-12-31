@@ -53,7 +53,7 @@ abstract class Delegate {
 
       yield [
         'name'        => $namespace.'_'.$name,
-        'description' => $method->comment() ?? null,
+        'description' => $method->comment() ?? ucfirst($name).' '.$namespace,
         'inputSchema' => [
           'type'       => 'object',
           'properties' => $properties ?: (object)[],
@@ -89,7 +89,7 @@ abstract class Delegate {
 
       yield [
         'name'        => $namespace.'_'.$name,
-        'description' => $method->comment() ?? null,
+        'description' => $method->comment() ?? ucfirst($name).' '.$namespace,
         'arguments'   => $arguments,
       ];
     }

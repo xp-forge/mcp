@@ -3,6 +3,9 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Fixed issue #10: Error: Expected string for description, by using a
+  default value composed from the namespace and method name
+  (@thekid)
 * Merged PR #9: Add possibility to access request values via `#[Value]`
   (@thekid)
 

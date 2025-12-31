@@ -21,7 +21,7 @@ class InstanceDelegateTest extends DelegateTest {
     Assert::equals(
       [[
         'name'        => 'tool_test',
-        'description' => null,
+        'description' => 'Test tool',
         'inputSchema' => [
           'type'       => 'object',
           'properties' => (object)[],
