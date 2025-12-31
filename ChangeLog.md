@@ -3,6 +3,8 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.7.0 / 2025-12-31
+
 * Fixed issue #10: Error: Expected string for description, by using a
   default value composed from the namespace and method name
   (@thekid)
