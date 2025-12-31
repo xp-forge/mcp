@@ -61,6 +61,25 @@ class McpServerToolCallingTest extends McpServerMethodsTest {
   }
 
   #[Test]
+  public function tool_with_named_value() {
+    $answer= $this->method('tools/call', ['name' => 'test_fixture', 'arguments' => []], new class() {
+
+      #[Tool]
+      public function fixture(
+        #[Value('user')]
+        $auth
+      ) {
+        return 'Hello '.$auth['uid'];
+      }
+    });
+
+    Assert::equals(
+      '{"jsonrpc":"2.0","id":"1","result":{"content":[{"type":"text","text":"Hello 6100"}]}}',
+      $answer
+    );
+  }
+
+  #[Test]
   public function tool_raising_error() {
     $answer= $this->method('tools/call', ['name' => 'test_fixture', 'arguments' => []], new class() {
 

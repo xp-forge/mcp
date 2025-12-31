@@ -126,9 +126,9 @@ abstract class Delegate {
       $annotations= $reflect->annotations();
       if ($annotations->provides(Param::class)) {
         $pass[]= $arguments[$param] ?? $reflect->default();
-      } else if ($annotations->provides(Value::class)) {
+      } else if ($value= $annotations->type(Value::class)) {
         $values??= $request->values();
-        $pass[]= $values[$param] ?? $reflect->default();
+        $pass[]= $values[$value->argument(0) ?? $param] ?? $reflect->default();
       } else {
         $values??= $request->values();
         $pass[]= $values['segments'][$param] ?? $reflect->default();
