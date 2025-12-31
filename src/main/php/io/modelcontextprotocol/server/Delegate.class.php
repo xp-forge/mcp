@@ -68,7 +68,10 @@ abstract class Delegate {
     foreach ($type->methods()->annotated(Prompt::class) as $name => $method) {
       $arguments= [];
       foreach ($method->parameters() as $param => $reflect) {
-        if ($annotation= $reflect->annotation(Param::class)) {
+        $annotations= $reflect->annotations();
+        if ($annotations->provides(Value::class)) {
+          continue;
+        } else if ($annotation= $annotations->type(Param::class)) {
           $schema= $annotation->newInstance()->schema();
           $description= $schema['description'] ?? null;
           unset($schema['description']);
@@ -120,9 +123,10 @@ abstract class Delegate {
     $pass= [];
     $values= null;
     foreach ($method->parameters() as $param => $reflect) {
-      if ($reflect->annotation(Param::class)) {
+      $annotations= $reflect->annotations();
+      if ($annotations->provides(Param::class)) {
         $pass[]= $arguments[$param] ?? $reflect->default();
-      } else if ($reflect->annotation(Value::class)) {
+      } else if ($annotations->provides(Value::class)) {
         $values ?? $values= $request->values();
         $pass[]= $values[$param] ?? $reflect->default();
       } else {
