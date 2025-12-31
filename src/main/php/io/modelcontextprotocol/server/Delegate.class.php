@@ -1,6 +1,6 @@
 <?php namespace io\modelcontextprotocol\server;
 
-use lang\reflection\Type;
+use lang\reflection\{Type, TargetException};
 use util\Bytes;
 
 /** Base class for InstanceDelegate, Delegates and ImplementationsIn */ 
@@ -41,7 +41,9 @@ abstract class Delegate {
       $properties= $required= [];
       foreach ($method->parameters() as $param => $reflect) {
         $annotations= $reflect->annotations();
-        if ($annotation= $annotations->type(Param::class)) {
+        if ($annotations->provides(Value::class)) {
+          continue;
+        } else if ($annotation= $annotations->type(Param::class)) {
           $properties[$param]= $annotation->newInstance()->schema();
         } else {
           $properties[$param]= ['type' => 'string', 'description' => ucfirst($param)];
@@ -66,7 +68,10 @@ abstract class Delegate {
     foreach ($type->methods()->annotated(Prompt::class) as $name => $method) {
       $arguments= [];
       foreach ($method->parameters() as $param => $reflect) {
-        if ($annotation= $reflect->annotation(Param::class)) {
+        $annotations= $reflect->annotations();
+        if ($annotations->provides(Value::class)) {
+          continue;
+        } else if ($annotation= $annotations->type(Param::class)) {
           $schema= $annotation->newInstance()->schema();
           $description= $schema['description'] ?? null;
           unset($schema['description']);
@@ -111,5 +116,29 @@ abstract class Delegate {
         : ['text' => $result]
       )
     ];
+  }
+
+  /** Access a given method */
+  protected function access($instance, $method, $arguments, $request) {
+    $pass= [];
+    $values= null;
+    foreach ($method->parameters() as $param => $reflect) {
+      $annotations= $reflect->annotations();
+      if ($annotations->provides(Param::class)) {
+        $pass[]= $arguments[$param] ?? $reflect->default();
+      } else if ($value= $annotations->type(Value::class)) {
+        $values??= $request->values();
+        $pass[]= $values[$value->argument(0) ?? $param] ?? $reflect->default();
+      } else {
+        $values??= $request->values();
+        $pass[]= $values['segments'][$param] ?? $reflect->default();
+      }
+    }
+
+    try {
+      return $method->invoke($instance, $pass);
+    } catch (TargetException $e) {
+      throw $e->getCause();
+    }
   }
 }

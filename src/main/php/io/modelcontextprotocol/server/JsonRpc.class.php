@@ -90,7 +90,7 @@ class JsonRpc implements Handler, Traceable {
 
       foreach ($this->routes as $pattern => $route) {
         if (preg_match($pattern, $payload['method'], $matches)) {
-          $result= $route($payload, $matches);
+          $result= $route($payload, $request->pass('matches', $matches));
           $this->cat && $this->cat->debug('<<<', $result);
 
           if ($result instanceof Response) {

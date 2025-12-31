@@ -7,7 +7,14 @@ use util\NoSuchElementException;
 use util\log\Traceable;
 use web\Handler;
 
-/** @test io.modelcontextprotocol.unittest.McpServerTest */
+/**
+ * MCP Server implementation
+ *
+ * @test  io.modelcontextprotocol.unittest.McpServerTest
+ * @test  io.modelcontextprotocol.unittest.McpServerPromptsTest
+ * @test  io.modelcontextprotocol.unittest.McpServerResourcesTest
+ * @test  io.modelcontextprotocol.unittest.McpServerToolCallingTest
+ */
 class McpServer implements Handler, Traceable {
   private $delegate, $version, $capabilities, $rpc;
   private $cat= null;
@@ -42,9 +49,9 @@ class McpServer implements Handler, Traceable {
       'resources/templates/list' => function() {
         return ['resourceTemplates' => $this->delegate->resources(true)];
       },
-      'tools/call' => function($payload) {
+      'tools/call' => function($payload, $request) {
         if ($invokeable= $this->delegate->invokeable($payload['params']['name'])) {
-          $result= $invokeable((array)$payload['params']['arguments']);
+          $result= $invokeable((array)$payload['params']['arguments'], $request);
           return ['content' => [['type' => 'text', 'text' => is_string($result)
             ? $result
             : Json::of($result)
@@ -52,9 +59,9 @@ class McpServer implements Handler, Traceable {
         }
         throw new NoSuchElementException($payload['params']['name']);
       },
-      'prompts/get' => function($payload) {
+      'prompts/get' => function($payload, $request) {
         if ($invokeable= $this->delegate->invokeable($payload['params']['name'])) {
-          $result= $invokeable((array)$payload['params']['arguments']);
+          $result= $invokeable((array)$payload['params']['arguments'], $request);
           return ['messages' => is_iterable($result)
             ? $result
             : [['role' => 'user', 'content' => ['type' => 'text', 'text' => $result]]]
@@ -62,8 +69,9 @@ class McpServer implements Handler, Traceable {
         }
         throw new NoSuchElementException($payload['params']['name']);
       },
-      'resources/read' => function($payload) {
-        if ($contents= $this->delegate->readable($payload['params']['uri'])) {
+      'resources/read' => function($payload, $request) {
+        if ($readable= $this->delegate->readable($payload['params']['uri'])) {
+          $contents= $readable([], $request);
           return ['contents' => $contents];
         }
         throw new NoSuchElementException($payload['params']['uri']);

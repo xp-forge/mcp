@@ -7,12 +7,13 @@ use web\io\{TestInput, TestOutput};
 use web\{Request, Response};
 
 class JsonRpcTest {
+  const USER= ['uid' => 6100];
 
   /** Handle fixture and return body */
   private function handle($fixture, $payload) {
     $request= new Request(new TestInput('POST', '/mcp', ['Content-Type' => 'application/json'], $payload));
     $response= new Response(new TestOutput());
-    foreach ($fixture->handle($request, $response) ?? [] as $_) { }
+    foreach ($fixture->handle($request->pass('user', self::USER), $response) ?? [] as $_) { }
 
     // Parse JSON from chunked encoding
     return preg_match('/\r\n(.+)\r\n/', $response->output()->body(), $matches)
@@ -71,5 +72,32 @@ class JsonRpcTest {
       new Request(new TestInput('POST', '/mcp', ['Content-Type' => 'text/plain'])),
       new Response(new TestOutput())
     );
+  }
+
+  #[Test]
+  public function can_access_payload() {
+    $answer= $this->handle(
+      new JsonRpc(['pass' => fn($payload, $request) => $payload['method']]),
+      '{"jsonrpc":"2.0","id":"1","method":"pass"}'
+    );
+    Assert::equals('{"jsonrpc":"2.0","id":"1","result":"pass"}', $answer);
+  }
+
+  #[Test]
+  public function can_access_request_values() {
+    $answer= $this->handle(
+      new JsonRpc(['pass' => fn($payload, $request) => $request->value('user')]),
+      '{"jsonrpc":"2.0","id":"1","method":"pass"}'
+    );
+    Assert::equals('{"jsonrpc":"2.0","id":"1","result":{"uid":6100}}', $answer);
+  }
+
+  #[Test]
+  public function can_access_matches() {
+    $answer= $this->handle(
+      new JsonRpc(['pass/(.+)' => fn($payload, $request) => $request->value('matches')[1]]),
+      '{"jsonrpc":"2.0","id":"1","method":"pass/all"}'
+    );
+    Assert::equals('{"jsonrpc":"2.0","id":"1","result":"all"}', $answer);
   }
 }
