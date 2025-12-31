@@ -3,6 +3,9 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Merged PR #9: Add possibility to access request values via `#[Value]`
+  (@thekid)
+
 ## 0.6.0 / 2025-08-31
 
 * Merged PR #7: Support multiple delegates via `Delegates` class
