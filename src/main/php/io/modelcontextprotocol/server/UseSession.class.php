@@ -11,8 +11,8 @@ class UseSession extends Tokens {
   }
 
   /** Issues a token */
-  public function issue(string $issuer, string $audience, ISession $session): array {
-    return ['token_type' => 'Bearer', 'access_token' => $session->id()]; 
+  public function issue(string $issuer, string $audience, ISession $session): string {
+    return $session->id();
   }
 
   /** Uses a token */

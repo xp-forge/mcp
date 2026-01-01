@@ -168,14 +168,11 @@ class OAuth2Gateway {
 
           // Invalidate the flow, clients may retry the above step (RFC 6749 §4.1.2 and §4.1.3)
           $session->remove('flow');
+          $token= $this->tokens->issue((string)$request->uri()->base(), $flow['client'], $session);
           $session->transmit($response);
           
           // Create token and return
-          return $this->result($response, $this->tokens->issue(
-            (string)$request->uri()->base(),
-            $flow['client'],
-            $session
-          ));
+          return $this->result($response, ['token_type' => 'Bearer', 'access_token' => $token]);
 
         default:
           return $this->error($response, 'invalid_request', 'Cannot handle requests to '.$path);
