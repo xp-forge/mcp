@@ -1,9 +1,10 @@
 <?php namespace io\modelcontextprotocol\server;
 
 use io\streams\Streams;
-use web\Routes;
+use web\Handler;
 use web\auth\Authentication;
 use web\filters\Invocation;
+use web\handler\Call;
 use web\session\Sessions;
 
 /**
@@ -181,8 +182,8 @@ class OAuth2Gateway {
   }
 
   /** @return function(web.Request, web.Response) */
-  public function authenticate($routing) {
-    $handler= Routes::cast($routing);
+  public function authenticate($target) {
+    $handler= $target instanceof Handler ? $target : new Call($target);
     return function($request, $response) use($handler) {
       $r= sscanf($request->header('Authorization') ?? '', 'Bearer %s', $token);
       if (1 === $r && ($user= $this->tokens->use($token))) {
