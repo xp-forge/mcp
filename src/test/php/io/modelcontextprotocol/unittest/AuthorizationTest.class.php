@@ -1,6 +1,7 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
 use io\modelcontextprotocol\{Authorization, CallFailed};
+use lang\FormatException;
 use test\{Assert, Expect, Test};
 
 class AuthorizationTest {
@@ -29,6 +30,16 @@ class AuthorizationTest {
 
   #[Test]
   public function header() {
+    Assert::equals('Bearer', (new Authorization('Bearer', []))->header());
+  }
+
+  #[Test]
+  public function parse() {
+    Assert::equals((new Authorization('Bearer', [])), Authorization::parse('Bearer'));
+  }
+
+  #[Test]
+  public function header_parameters() {
     Assert::equals(
       'Bearer error="invalid_request", resource_metadata="https://example.com/.well-known/oauth-protected-resource/mcp"',
       (new Authorization('Bearer', self::PARAMETERS))->header()
@@ -36,11 +47,16 @@ class AuthorizationTest {
   }
 
   #[Test]
-  public function parse() {
+  public function parse_parameters() {
     Assert::equals(
       (new Authorization('Bearer', self::PARAMETERS)),
       Authorization::parse('Bearer error="invalid_request", resource_metadata="https://example.com/.well-known/oauth-protected-resource/mcp"')
     );
+  }
+
+  #[Test, Expect(class: FormatException::class, message: 'Unclosed string in parameter "error"')]
+  public function parse_unclosed() {
+    Authorization::parse('Bearer error="unclosed');
   }
 
   #[Test, Expect(class: CallFailed::class, message: '#401: Bearer error="invalid_request", resource_metadata="https://example.com/.well-known/oauth-protected-resource/mcp"')]
