@@ -3,16 +3,33 @@
 use io\modelcontextprotocol\server\{OAuth2Gateway, Clients, Tokens};
 use lang\IllegalStateException;
 use test\{Assert, Test, Values};
+use util\URI;
+use web\auth\Authentication;
 use web\io\{TestInput, TestOutput};
+use web\session\ForTesting;
 use web\{Request, Response};
 
 class OAuth2GatewayTest {
   const VALID_TOKEN= 'test-token';
+  const VALID_CLIENT= 'test-client';
+  const VALID_REDIRECT= 'http://localhost:35535/oauth/callback';
   const USER= ['id' => 'test'];
 
   /** Clients fixture */
   private function clients() {
-    return new class() extends Clients { };
+    return new class() extends Clients {
+      private $registered= [
+        OAuth2GatewayTest::VALID_CLIENT => [
+          'client_name'   => 'Test client',
+          'scope'         => 'openid profile',
+          'redirect_uris' => [OAuth2GatewayTest::VALID_REDIRECT],
+        ],
+      ];
+
+      public function lookup($id) {
+        return $this->registered[$id] ?? null;
+      }
+    };
   }
 
   /** Tokens fixture */
@@ -24,15 +41,26 @@ class OAuth2GatewayTest {
     };
   }
 
+  /** Authentication delegation */
+  private function auth() {
+    return new class() extends Authentication {
+      public function present($request) { return true; }
+      public function filter($request, $response, $invokation) {
+        return $invokation->proceed($request->pass('user', OAuth2GatewayTest::USER), $response);
+      }
+    };
+  }
+
   /**
    * Invokes the handler function
    *
    * @param  function(web.Request, web.Response): var $handler
+   * @param  string $uri
    * @param  [:var] $headers
    * @return web.Response
    */
-  private function handle($handler, $headers= []) {
-    $request= new Request(new TestInput('GET', '/', $headers));
+  private function handle($handler, $uri, $headers= []) {
+    $request= new Request(new TestInput('GET', $uri, $headers));
     $response= new Response(new TestOutput());
 
     foreach ($handler($request, $response) ?? [] as $_) { }
@@ -55,7 +83,7 @@ class OAuth2GatewayTest {
   #[Test]
   public function metadata() {
     $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
-    $response= $this->handle($gateway->metadata(), ['Host' => 'test']);
+    $response= $this->handle($gateway->metadata(), '/', ['Host' => 'test']);
 
     Assert::equals(200, $response->status());
     Assert::equals(
@@ -69,7 +97,7 @@ class OAuth2GatewayTest {
         'code_challenge_methods_supported'      => ['S256'],
         'token_endpoint_auth_methods_supported' => ['none']
       ],
-      preg_match('/\r\n\r\n(.+)$/', $response->output()->bytes(), $body) ? json_decode($body[1], true) : null
+      json_decode($response->output()->body(), true)
     );
   }
 
@@ -79,7 +107,7 @@ class OAuth2GatewayTest {
     $handler= $gateway->authenticate(function($request, $response) use(&$authenticated) {
       $authenticated= $request->value('user');
     });
-    $response= $this->handle($handler, ['Authorization' => 'Bearer '.self::VALID_TOKEN]);
+    $response= $this->handle($handler, '/', ['Authorization' => 'Bearer '.self::VALID_TOKEN]);
 
     Assert::equals(200, $response->status());
     Assert::equals(self::USER, $authenticated);
@@ -91,9 +119,29 @@ class OAuth2GatewayTest {
     $handler= $gateway->authenticate(function($request, $response) {
       throw new IllegalStateException('Unreachable');
     });
-    $response= $this->handle($handler, $headers);
+    $response= $this->handle($handler, '/', $headers);
 
     Assert::equals(401, $response->status());
     Assert::equals(['WWW-Authenticate' => 'Bearer'], $response->headers());
+  }
+
+  #[Test]
+  public function authorize_redirection() {
+    $sessions= new ForTesting();
+    $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
+    $handler= $gateway->flow($this->auth(), $sessions);
+    $response= $this->handle($handler, '/oauth/authorize?'.http_build_query(
+      [
+        'client_id'    => self::VALID_CLIENT,
+        'redirect_uri' => self::VALID_REDIRECT,
+        'state'        => 'test-state'
+      ],
+      PHP_QUERY_RFC3986
+    ));
+    $location= new URI($response->headers()['Location']);
+
+    Assert::equals(302, $response->status());
+    Assert::equals(self::VALID_REDIRECT, $location->base().$location->path());
+    Assert::matches('/code=.+&state=test-state/', $location->query());
   }
 }

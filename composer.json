@@ -9,6 +9,7 @@
     "xp-framework/core": "^12.0 | ^11.0 | ^10.2",
     "xp-forge/rest-client": "^6.0 | ^5.0",
     "xp-forge/web": "^4.6",
+    "xp-forge/web-auth": "^6.0",
     "xp-forge/sessions": "^3.2",
     "php" : ">=7.4.0"
   },
