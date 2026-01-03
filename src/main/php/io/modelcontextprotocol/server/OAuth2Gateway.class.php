@@ -64,7 +64,7 @@ class OAuth2Gateway {
   public function continuation() { return "/{$this->base}/continuation"; }
 
   /** @return function(web.Request, web.Response) */
-  public function meta() {
+  public function metadata() {
     return function($request, $response) {
       $host= $request->uri()->base();
       return $this->result($response, [

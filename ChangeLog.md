@@ -3,6 +3,9 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Renamed *meta()* to *metadata()* in `OAuth2Gateway` for consistency
+  with wording used in the specification and e.g. `WWW-Authenticate`.
+  (@thekid)
 * Merged PR #12: Add OAuth2 gateway to implement authorization for MCP
   (@thekid)
 

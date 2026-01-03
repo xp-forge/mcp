@@ -53,9 +53,9 @@ class OAuth2GatewayTest {
   }
 
   #[Test]
-  public function meta() {
+  public function metadata() {
     $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
-    $response= $this->handle($gateway->meta(), ['Host' => 'test']);
+    $response= $this->handle($gateway->metadata(), ['Host' => 'test']);
 
     Assert::equals(200, $response->status());
     Assert::equals(
