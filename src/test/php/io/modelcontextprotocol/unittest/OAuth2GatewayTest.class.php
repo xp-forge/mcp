@@ -215,6 +215,22 @@ class OAuth2GatewayTest {
     Assert::matches('/Cannot authorize client invalid-client/', $response->output()->body());
   }
 
+  #[Test]
+  public function cannot_call_continutation_with_invalid_session() {
+    $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
+    $handler= $gateway->flow($this->auth(), new ForTesting());
+    $response= $this->handle($handler, ['GET', '/oauth/continuation', [
+      'client_id'             => self::VALID_CLIENT,
+      'redirect_uri'          => self::VALID_REDIRECT,
+      'state'                 => 'test-state',
+      'code_challenge'        => 'test-challenge',
+      'code_challenge_method' => 'S256',
+    ]]);
+
+    Assert::equals(400, $response->status());
+    Assert::matches('/Call authorize first/', $response->output()->body());
+  }
+
   #[Test, Values(from: 'challenges')]
   public function token_issued($method, $challenge) {
     $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());

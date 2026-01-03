@@ -111,24 +111,30 @@ class OAuth2Gateway {
               'Cannot authorize client '.$request->param('client_id')
             );
           }
+
+          // Create session and register flow
+          $session= $sessions->create();
+          $session->register('flow', [
+            'client'    => $request->param('client_id'),
+            'redirect'  => $request->param('redirect_uri'),
+            'method'    => $request->param('code_challenge_method'),
+            'challenge' => $request->param('code_challenge'),
+          ]);
+          $session->transmit($response);
           // Fall through
 
         case "GET /{$this->base}/continuation":
-          return $auth->filter($request, $response, new Invocation(function($request, $response) use($sessions) {
+          return $auth->filter($request, $response, new Invocation(function($request, $response) use($sessions, &$session) {
             $response->trace('client', $request->param('client_id'));
-            if (!$this->clients->verify($request->param('client_id'), $request->param('redirect_uri'))) {
-              return $this->error($response, 'invalid_request', 'Call /authorize first');
+
+            // Verify session exists and contains a valid flow
+            $session??= $sessions->locate($request);
+            if (!$session || !$session->value('flow')) {
+              return $this->error($response, 400, 'invalid_request', 'Call authorize first');
             }
 
-            // Create a session, register user and flow
-            $session= $sessions->create();
+            // Register user in session
             $session->register('user', $request->value('user'));
-            $session->register('flow', [
-              'client'    => $request->param('client_id'),
-              'redirect'  => $request->param('redirect_uri'),
-              'method'    => $request->param('code_challenge_method'),
-              'challenge' => $request->param('code_challenge'),
-            ]);
             $session->transmit($response);
 
             // Then, redirect to the specified redirect_uri
