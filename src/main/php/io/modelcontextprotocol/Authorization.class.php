@@ -42,9 +42,7 @@ class Authorization extends Outcome {
     $parameters= [];
     do {
       $s= strcspn($header, '=', $offset);
-      if ($offset + $s >= $l) {
-        throw new FormatException('Could not find "="');
-      }
+      if ($offset + $s >= $l) break;
 
       $name= trim(substr($header, $offset, $s));
       $offset+= $s + 1;
