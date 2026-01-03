@@ -146,4 +146,34 @@ class OAuth2GatewayTest {
     Assert::equals(self::VALID_REDIRECT, $location->base().$location->path());
     Assert::matches('/code=.+&state=test-state/', $location->query());
   }
+
+  #[Test]
+  public function cannot_authorize_invalid_redirect() {
+    $sessions= new ForTesting();
+    $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
+    $handler= $gateway->flow($this->auth(), $sessions);
+    $response= $this->handle($handler, '/oauth/authorize?'.$this->query([
+      'client_id'    => self::VALID_CLIENT,
+      'redirect_uri' => 'http://example.com',
+      'state'        => 'test-state'
+    ]));
+
+    Assert::equals(400, $response->status());
+    Assert::matches('/Cannot authorize client test-client/', $response->output()->body());
+  }
+
+  #[Test]
+  public function cannot_authorize_unknown_client() {
+    $sessions= new ForTesting();
+    $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
+    $handler= $gateway->flow($this->auth(), $sessions);
+    $response= $this->handle($handler, '/oauth/authorize?'.$this->query([
+      'client_id'    => 'invalid-client',
+      'redirect_uri' => self::VALID_REDIRECT,
+      'state'        => 'test-state'
+    ]));
+
+    Assert::equals(400, $response->status());
+    Assert::matches('/Cannot authorize client invalid-client/', $response->output()->body());
+  }
 }
