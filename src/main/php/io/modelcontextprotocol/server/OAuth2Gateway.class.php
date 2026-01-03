@@ -11,6 +11,7 @@ use web\session\Sessions;
  * OAuth2 gateway
  *
  * @see   https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization
+ * @test  io.modelcontextprotocol.unittest.OAuth2GatewayTest
  */
 class OAuth2Gateway {
   private $base, $clients, $tokens;
