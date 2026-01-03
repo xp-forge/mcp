@@ -53,6 +53,27 @@ class OAuth2GatewayTest {
   }
 
   #[Test]
+  public function meta() {
+    $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
+    $response= $this->handle($gateway->meta(), ['Host' => 'test']);
+
+    Assert::equals(200, $response->status());
+    Assert::equals(
+      [
+        'issuer'                                => "http://test",
+        'authorization_endpoint'                => "http://test/oauth/authorize",
+        'token_endpoint'                        => "http://test/oauth/token",
+        'registration_endpoint'                 => "http://test/oauth/register",
+        'response_types_supported'              => ['code'],
+        'grant_types_supported'                 => ['authorization_code', 'refresh_token'],
+        'code_challenge_methods_supported'      => ['S256'],
+        'token_endpoint_auth_methods_supported' => ['none']
+      ],
+      preg_match('/\r\n\r\n(.+)$/', $response->output()->bytes(), $body) ? json_decode($body[1], true) : null
+    );
+  }
+
+  #[Test]
   public function unauthenticated() {
     $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
     $handler= $gateway->authenticate(function($request, $response) {
