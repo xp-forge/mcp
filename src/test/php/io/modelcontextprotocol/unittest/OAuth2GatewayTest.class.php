@@ -15,6 +15,12 @@ class OAuth2GatewayTest {
   const VALID_REDIRECT= 'http://localhost:35535/oauth/callback';
   const USER= ['id' => 'test'];
 
+  /** @return iterable */
+  private function challenges() {
+    yield ['S256', 'Xuq1l4Pllrvf6AJ2BfBwnQFQKBK7dnKAbolZ3zvWFlw']; // base64(sha256(challenge))
+    yield ['plain', 'test-challenge'];
+  }
+
   /** Clients fixture */
   private function clients() {
     return new class() extends Clients {
@@ -182,9 +188,8 @@ class OAuth2GatewayTest {
     Assert::matches('/Cannot authorize client invalid-client/', $response->output()->body());
   }
 
-  #[Test]
-  public function token_issued() {
-    $challenge= 'test-challenge';
+  #[Test, Values(from: 'challenges')]
+  public function token_issued($method, $challenge) {
     $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
     $handler= $gateway->flow($this->auth(), new ForTesting());
 
@@ -193,8 +198,8 @@ class OAuth2GatewayTest {
       'client_id'             => self::VALID_CLIENT,
       'redirect_uri'          => self::VALID_REDIRECT,
       'state'                 => 'test-state',
-      'code_challenge'        => 'Xuq1l4Pllrvf6AJ2BfBwnQFQKBK7dnKAbolZ3zvWFlw', // base64(sha256(challeng))
-      'code_challenge_method' => 'S256',
+      'code_challenge'        => $challenge,
+      'code_challenge_method' => $method,
     ]]);
     $location= new URI($response->headers()['Location']);
 
@@ -204,7 +209,7 @@ class OAuth2GatewayTest {
       'redirect_uri'          => self::VALID_REDIRECT,
       'grant_type'            => 'authorization_code',
       'code'                  => $location->param('code'),
-      'code_verifier'         => $challenge,
+      'code_verifier'         => 'test-challenge',
     ]]);
 
     Assert::equals(
