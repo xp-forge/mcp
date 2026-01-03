@@ -112,8 +112,8 @@ class OAuth2GatewayTest {
     Assert::equals(
       [
         'resource'                 => 'http://test',
-        'authorization_servers'    => 'http://test',
-        'scopes_supported'         => ['mcp:read', 'mcp:tools', 'mcp:prompts'],
+        'authorization_servers'    => ['http://test'],
+        'scopes_supported'         => ['mcp:tools', 'mcp:prompts', 'mcp:resources', 'mcp:read'],
         'bearer_methods_supported' => ['header'],
         'mcp_protocol_version'     => '2025-06-18',
         'resource_type'            => 'mcp-server'
