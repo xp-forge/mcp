@@ -23,6 +23,11 @@ class OAuth2Gateway {
     $this->tokens= $tokens;
   }
 
+  /** URL-safe base64 encoding */
+  private static function base64(string $input): string {
+    return rtrim(strtr(base64_encode($input), '+/', '-_'), '=');
+  }
+
   /**
    * Sends a 200 OK and the given value serialized as JSON
    *
@@ -148,17 +153,19 @@ class OAuth2Gateway {
             $flow= $session->value('flow') ?? ['method' => ':REUSED', 'client' => '', 'redirect' => '', 'challenge' => ''];
           }
 
+          // Always execute all 3 hash_equals() checks to reduce timing attacks
           // - Is associated with the same client_id and the same redirect_uri
-          // - Verifies according to PKCE method
+          // - Verifies according to PKCE methods S256 and plain
           $c= hash_equals($flow['client'], $request->param('client_id'));
           $r= hash_equals($flow['redirect'], $request->param('redirect_uri'));
-          $v= hash_equals($flow['challenge'], match ($flow['method']) {
-            'S256'  => rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '='),
-            'plain' => $verifier,
-            default => "!{$flow['challenge']}",
-          });
+          if ('S256' === $flow['method']) {
+            $v= hash_equals($flow['challenge'], self::base64(hash('sha256', $verifier, true)));
+          } else if ('plain' === $flow['method']) {
+            $v= hash_equals($flow['challenge'], $verifier);
+          } else {
+            $v= hash_equals($flow['challenge'], '') || false;
+          }
 
-          // Always execute all 3 hash_equals() checks to reduce timing attacks
           // Do not give a precise error message to not give attackers any hint
           if (!$c || !$r || !$v) {
             return $this->error(
