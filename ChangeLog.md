@@ -3,6 +3,12 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.8.1 / 2026-01-03
+
+* Continue OAuth without creating duplicate sessions, see this comment:
+  https://github.com/xp-forge/mcp/issues/11#issuecomment-3707245647
+  (@thekid)
+
 ## 0.8.0 / 2026-01-03
 
 * Added support for `oauth-protected-resource` metadata (RFC 9728)

@@ -127,7 +127,7 @@ class OAuth2Gateway {
             );
           }
 
-          // Create session and register flow
+          // Create session and register flow, then rewrite OAuth to continue
           $session= $sessions->create();
           $session->register('flow', [
             'client'    => $request->param('client_id'),
@@ -136,6 +136,7 @@ class OAuth2Gateway {
             'challenge' => $request->param('code_challenge'),
           ]);
           $session->transmit($response);
+          $request->rewrite($request->uri()->using()->path($this->continuation())->create());
           // Fall through
 
         case "GET /{$this->base}/continuation":
