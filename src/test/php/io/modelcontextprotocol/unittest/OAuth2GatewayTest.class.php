@@ -51,6 +51,11 @@ class OAuth2GatewayTest {
     };
   }
 
+  /** Builds a RFC3986 conformant query string*/
+  private function query(array $parameters): string {
+    return http_build_query($parameters, PHP_QUERY_RFC3986);
+  }
+
   /**
    * Invokes the handler function
    *
@@ -130,14 +135,11 @@ class OAuth2GatewayTest {
     $sessions= new ForTesting();
     $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
     $handler= $gateway->flow($this->auth(), $sessions);
-    $response= $this->handle($handler, '/oauth/authorize?'.http_build_query(
-      [
-        'client_id'    => self::VALID_CLIENT,
-        'redirect_uri' => self::VALID_REDIRECT,
-        'state'        => 'test-state'
-      ],
-      PHP_QUERY_RFC3986
-    ));
+    $response= $this->handle($handler, '/oauth/authorize?'.$this->query([
+      'client_id'    => self::VALID_CLIENT,
+      'redirect_uri' => self::VALID_REDIRECT,
+      'state'        => 'test-state'
+    ]));
     $location= new URI($response->headers()['Location']);
 
     Assert::equals(302, $response->status());
