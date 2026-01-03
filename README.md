@@ -132,6 +132,7 @@ class Test extends Application {
     return [
       '/mcp'   => $gateway->authenticate($server),
       '/oauth' => $gateway->flow($auth, $sessions),
+      '/.well-known/oauth-protected-resource'   => $gateway->resource(),
       '/.well-known/oauth-authorization-server' => $gateway->metadata(),
     ];
   }

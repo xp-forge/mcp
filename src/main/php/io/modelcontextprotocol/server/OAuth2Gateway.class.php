@@ -71,6 +71,21 @@ class OAuth2Gateway {
   public function continuation() { return "/{$this->base}/continuation"; }
 
   /** @return function(web.Request, web.Response) */
+  public function resource($version= '2025-06-18') {
+    return function($request, $response) use($version) {
+      $host= $request->uri()->base();
+      return $this->result($response, [
+        'resource'                 => "{$host}",
+        'authorization_servers'    => "{$host}",
+        'scopes_supported'         => ['mcp:read', 'mcp:tools', 'mcp:prompts'],
+        'bearer_methods_supported' => ['header'],
+        'mcp_protocol_version'     => $version,
+        'resource_type'            => 'mcp-server'
+      ]);
+    };
+  }
+
+  /** @return function(web.Request, web.Response) */
   public function metadata() {
     return function($request, $response) {
       $host= $request->uri()->base();

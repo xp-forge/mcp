@@ -104,6 +104,25 @@ class OAuth2GatewayTest {
   }
 
   #[Test]
+  public function resource() {
+    $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
+    $response= $this->handle($gateway->resource(), ['GET', '/', []], ['Host' => 'test']);
+
+    Assert::equals(200, $response->status());
+    Assert::equals(
+      [
+        'resource'                 => 'http://test',
+        'authorization_servers'    => 'http://test',
+        'scopes_supported'         => ['mcp:read', 'mcp:tools', 'mcp:prompts'],
+        'bearer_methods_supported' => ['header'],
+        'mcp_protocol_version'     => '2025-06-18',
+        'resource_type'            => 'mcp-server'
+      ],
+      json_decode($response->output()->body(), true)
+    );
+  }
+
+  #[Test]
   public function metadata() {
     $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
     $response= $this->handle($gateway->metadata(), ['GET', '/', []], ['Host' => 'test']);
@@ -111,10 +130,10 @@ class OAuth2GatewayTest {
     Assert::equals(200, $response->status());
     Assert::equals(
       [
-        'issuer'                                => "http://test",
-        'authorization_endpoint'                => "http://test/oauth/authorize",
-        'token_endpoint'                        => "http://test/oauth/token",
-        'registration_endpoint'                 => "http://test/oauth/register",
+        'issuer'                                => 'http://test',
+        'authorization_endpoint'                => 'http://test/oauth/authorize',
+        'token_endpoint'                        => 'http://test/oauth/token',
+        'registration_endpoint'                 => 'http://test/oauth/register',
         'response_types_supported'              => ['code'],
         'grant_types_supported'                 => ['authorization_code', 'refresh_token'],
         'code_challenge_methods_supported'      => ['S256'],

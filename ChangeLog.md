@@ -3,6 +3,8 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Added support for `oauth-protected-resource` metadata (RFC 9728)
+  (@thekid)
 * Added PHP 8.6 to the test matrix - @thekid
 * Renamed *meta()* to *metadata()* in `OAuth2Gateway` for consistency
   with wording used in the specification and e.g. `WWW-Authenticate`.
