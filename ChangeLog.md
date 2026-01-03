@@ -3,6 +3,9 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Merged PR #12: Add OAuth2 gateway to implement authorization for MCP
+  (@thekid)
+
 ## 0.7.0 / 2025-12-31
 
 * Fixed issue #10: Error: Expected string for description, by using a
