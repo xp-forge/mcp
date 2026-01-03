@@ -153,9 +153,8 @@ class OAuth2Gateway {
             $flow= $session->value('flow') ?? ['method' => ':REUSED', 'client' => '', 'redirect' => '', 'challenge' => ''];
           }
 
-          // Always execute all 3 hash_equals() checks to reduce timing attacks
           // - Is associated with the same client_id and the same redirect_uri
-          // - Verifies according to PKCE methods S256 and plain
+          // - Verifies according to PKCE methods S256 and plain; or is FALSE
           $c= hash_equals($flow['client'], $request->param('client_id'));
           $r= hash_equals($flow['redirect'], $request->param('redirect_uri'));
           if ('S256' === $flow['method']) {
@@ -163,7 +162,7 @@ class OAuth2Gateway {
           } else if ('plain' === $flow['method']) {
             $v= hash_equals($flow['challenge'], $verifier);
           } else {
-            $v= hash_equals($flow['challenge'], '') || false;
+            $v= false;
           }
 
           // Do not give a precise error message to not give attackers any hint
