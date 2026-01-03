@@ -74,19 +74,7 @@ class OAuth2GatewayTest {
   }
 
   #[Test]
-  public function unauthenticated() {
-    $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
-    $handler= $gateway->authenticate(function($request, $response) {
-      throw new IllegalStateException('Unreachable');
-    });
-    $response= $this->handle($handler);
-
-    Assert::equals(401, $response->status());
-    Assert::equals(['WWW-Authenticate' => 'Bearer'], $response->headers());
-  }
-
-  #[Test]
-  public function authenticated() {
+  public function authenticated_by_bearer_token() {
     $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
     $handler= $gateway->authenticate(function($request, $response) use(&$authenticated) {
       $authenticated= $request->value('user');
@@ -95,5 +83,17 @@ class OAuth2GatewayTest {
 
     Assert::equals(200, $response->status());
     Assert::equals(self::USER, $authenticated);
+  }
+
+  #[Test, Values([[[]], [['Authorization' => 'Bearer invalid_or_expired']]])]
+  public function unauthenticated($headers) {
+    $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
+    $handler= $gateway->authenticate(function($request, $response) {
+      throw new IllegalStateException('Unreachable');
+    });
+    $response= $this->handle($handler, $headers);
+
+    Assert::equals(401, $response->status());
+    Assert::equals(['WWW-Authenticate' => 'Bearer'], $response->headers());
   }
 }
