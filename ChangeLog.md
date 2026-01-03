@@ -3,6 +3,8 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.8.0 / 2026-01-03
+
 * Added support for `oauth-protected-resource` metadata (RFC 9728)
   (@thekid)
 * Added PHP 8.6 to the test matrix - @thekid
