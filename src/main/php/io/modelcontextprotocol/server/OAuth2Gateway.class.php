@@ -1,5 +1,6 @@
 <?php namespace io\modelcontextprotocol\server;
 
+use Throwable as Any;
 use io\streams\Streams;
 use web\Handler;
 use web\auth\Authentication;
@@ -56,12 +57,13 @@ class OAuth2Gateway {
    * Sends a 400 Bad Request and the given error and description serialized as JSON
    *
    * @param  web.Response $response
+   * @param  int $status
    * @param  string $error
    * @param  string $description
    * @return void
    */
-  private function error($response, $error, $description) {
-    $response->answer(400);
+  private function error($response, $status, $error, $description) {
+    $response->answer($status);
     $response->send(json_encode(['error' => $error, 'error_description' => $description]), 'application/json');
   }
 
@@ -92,16 +94,19 @@ class OAuth2Gateway {
       switch ($path) {
         case "POST /{$this->base}/register":
           $payload= json_decode(Streams::readAll($request->stream()), true);
-          $client= $this->clients->register($payload);
-          $response->trace('registered', $client);
-
-          return $this->result($response, $client);
+          try {
+            $client= $this->clients->register($payload);
+            $response->trace('registered', $client);
+            return $this->result($response, $client);
+          } catch (Any $e) {
+            return $this->error($response, 500, 'server_error', $e->getMessage());
+          }
         
         case "GET /{$this->base}/authorize":
-          $client= $this->clients->lookup($request->param('client_id'));
-          if (!$client || !in_array($request->param('redirect_uri'), $client['redirect_uris'])) {
+          if (!$this->clients->verify($request->param('client_id'), $request->param('redirect_uri'))) {
             return $this->error(
               $response,
+              400,
               'invalid_client',
               'Cannot authorize client '.$request->param('client_id')
             );
@@ -111,6 +116,9 @@ class OAuth2Gateway {
         case "GET /{$this->base}/continuation":
           return $auth->filter($request, $response, new Invocation(function($request, $response) use($sessions) {
             $response->trace('client', $request->param('client_id'));
+            if (!$this->clients->verify($request->param('client_id'), $request->param('redirect_uri'))) {
+              return $this->error($response, 'invalid_request', 'Call /authorize first');
+            }
 
             // Create a session, register user and flow
             $session= $sessions->create();
@@ -169,6 +177,7 @@ class OAuth2Gateway {
           if (!$c || !$r || !$v) {
             return $this->error(
               $response,
+              400,
               'invalid_grant',
               'Invalid, expired or already used authorization code, or PKCE verification failed'
             );

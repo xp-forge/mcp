@@ -32,7 +32,7 @@ class OAuth2GatewayTest {
         ],
       ];
 
-      public function lookup($id) {
+      public function lookup(string $id): ?array {
         return $this->registered[$id] ?? null;
       }
     };
@@ -72,8 +72,18 @@ class OAuth2GatewayTest {
    * @return web.Response
    */
   private function handle($handler, $request, $headers= []) {
-    [$method, $uri, $params]= $request;
-    $request= new Request(new TestInput($method, $uri.'?'.http_build_query($params, PHP_QUERY_RFC3986), $headers));
+    [$method, $uri, $payload]= $request;
+
+    if (empty($payload)) {
+      $body= '';
+    } else if ('GET' === $method) {
+      $uri.= '?'.http_build_query($payload, PHP_QUERY_RFC3986);
+      $body= '';
+    } else {
+      $body= $payload;
+    }
+
+    $request= new Request(new TestInput($method, $uri, $headers, $body));
     $response= new Response(new TestOutput());
 
     foreach ($handler($request, $response) ?? [] as $_) { }
@@ -136,6 +146,23 @@ class OAuth2GatewayTest {
 
     Assert::equals(401, $response->status());
     Assert::equals(['WWW-Authenticate' => 'Bearer'], $response->headers());
+  }
+
+  #[Test]
+  public function registration_denied_by_default() {
+    $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
+    $handler= $gateway->flow($this->auth(), new ForTesting());
+    $response= $this->handle($handler, ['POST', '/oauth/register', <<<'JSON'
+      {
+        "client_name": "New client",
+        "redirect_uris": ["http://example.com/oauth/callback"],
+        "scope": "openid email profile"
+      }
+      JSON
+    ]);
+
+    Assert::equals(500, $response->status());
+    Assert::matches('/Cannot register clients/', $response->output()->body());
   }
 
   #[Test]
