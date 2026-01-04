@@ -10,16 +10,28 @@ class UseSession extends Tokens {
     $this->sessions= $sessions;
   }
 
-  /** Issues a token */
-  public function issue(string $issuer, string $audience, ISession $session): string {
-    return $session->id();
+  /**
+   * Issues a token, returning the access token response
+   *
+   * @see https://www.oauth.com/oauth2-servers/access-tokens/access-token-response/
+   */
+  public function issue(string $issuer, array $flow, ISession $session): array {
+    $token= ['access_token' => $session->id(), 'expires_in' => $sessions->expires() - time()];
+
+    // Scopes are optional
+    if (!empty($flow['scopes'])) {
+      $session->register('scopes', $flow['scopes']);
+      $token['scope']= implode(' ', $flow['scopes']);
+    }
+
+    return $token;
   }
 
   /** Uses a token */
   public function use(string $token): ?array {
     if ($session= $this->sessions->open($token)) {
       try {
-        return $session->value('user');
+        return ['user' => $session->value('user'), 'scopes' => $session->value('scopes')];
       } finally {
         $session->close();
       }

@@ -42,13 +42,13 @@ class OAuth2GatewayTest {
   private function tokens() {
     return new class() extends Tokens {
 
-      public function issue($issuer, $audience, $session) {
+      public function issue($issuer, $flow, $session) {
         $session->destroy();
-        return OAuth2GatewayTest::VALID_TOKEN;
+        return ['access_token' => OAuth2GatewayTest::VALID_TOKEN, 'scope' => implode(' ', $flow['scopes'] ?? [])];
       }
 
       public function use($token) {
-        return OAuth2GatewayTest::VALID_TOKEN === $token ? OAuth2GatewayTest::USER : null;
+        return OAuth2GatewayTest::VALID_TOKEN === $token ? ['user' => OAuth2GatewayTest::USER] : null;
       }
     };
   }
@@ -252,6 +252,7 @@ class OAuth2GatewayTest {
 
   #[Test, Values(from: 'challenges')]
   public function token_issued($method, $challenge) {
+    $scope= 'mcp:tools';
     $gateway= new OAuth2Gateway('/oauth', $this->clients(), $this->tokens());
     $handler= $gateway->flow($this->auth(), new ForTesting());
 
@@ -262,6 +263,7 @@ class OAuth2GatewayTest {
       'state'                 => 'test-state',
       'code_challenge'        => $challenge,
       'code_challenge_method' => $method,
+      'scope'                 => $scope,
     ]]);
     $location= new URI($response->headers()['Location']);
 
@@ -275,7 +277,7 @@ class OAuth2GatewayTest {
     ]]);
 
     Assert::equals(
-      ['token_type' => 'Bearer', 'access_token' => self::VALID_TOKEN],
+      ['token_type' => 'Bearer', 'access_token' => self::VALID_TOKEN, 'scope' => $scope],
       json_decode($response->output()->body(), true)
     );
   }
