@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.9.0 / 2026-01-04
+
+* Renamed *UseSession* to `UseSessions` to clarify usage - @thekid
+* Merged PR #14: Pass scopes requested during /authorize - @thekid
 * **Heads up:** Require `xp-forge/sessions` version 4.0+ - @thekid
 
 ## 0.8.2 / 2026-01-04
