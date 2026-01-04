@@ -3,6 +3,8 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* **Heads up:** Require `xp-forge/sessions` version 4.0+ - @thekid
+
 ## 0.8.2 / 2026-01-04
 
 * Made compatible with `xp-forge/web-auth` version 7.0 - @thekid
