@@ -136,7 +136,8 @@ class OAuth2Gateway {
             'challenge' => $request->param('code_challenge'),
             'scopes'    => explode(' ', $request->param('scope') ?? ''),
           ]);
-          $session->transmit($response);
+          $session->close();
+          $sessions->attach($session, $response);
           $request->rewrite($request->uri()->using()->path($this->continuation())->create());
           // Fall through
 
@@ -152,7 +153,8 @@ class OAuth2Gateway {
 
             // Register user in session
             $session->register('user', $request->value('user'));
-            $session->transmit($response);
+            $session->close();
+            $sessions->detach($session, $response);
 
             // Then, redirect to the specified redirect_uri
             return $this->redirect($response, sprintf(
@@ -209,7 +211,6 @@ class OAuth2Gateway {
           // Invalidate the flow, clients may retry the above step (RFC 6749 §4.1.2 and §4.1.3)
           $token= $this->tokens->issue((string)$request->uri()->base(), $flow, $session->value('user'));
           $session->destroy();
-          $session->transmit($response);
 
           // Create token response and return
           return $this->result($response, ['token_type' => 'Bearer'] + $token);
