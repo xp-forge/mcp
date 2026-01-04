@@ -2,6 +2,7 @@
 
 use web\session\{Sessions, ISession};
 
+/** @test io.modelcontextprotocol.unittest.UseSessionTest */
 class UseSession extends Tokens {
   private $sessions;
 
@@ -16,7 +17,7 @@ class UseSession extends Tokens {
    * @see https://www.oauth.com/oauth2-servers/access-tokens/access-token-response/
    */
   public function issue(string $issuer, array $flow, ISession $session): array {
-    $token= ['access_token' => $session->id(), 'expires_in' => $sessions->expires() - time()];
+    $token= ['access_token' => $session->id(), 'expires_in' => $session->expires() - time()];
 
     // Scopes are optional
     if (!empty($flow['scopes'])) {
