@@ -42,8 +42,7 @@ class OAuth2GatewayTest {
   private function tokens() {
     return new class() extends Tokens {
 
-      public function issue($issuer, $flow, $session) {
-        $session->destroy();
+      public function issue($issuer, $flow, $user) {
         return ['access_token' => OAuth2GatewayTest::VALID_TOKEN, 'scope' => implode(' ', $flow['scopes'] ?? [])];
       }
 

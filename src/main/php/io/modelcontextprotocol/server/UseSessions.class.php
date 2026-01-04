@@ -1,9 +1,9 @@
 <?php namespace io\modelcontextprotocol\server;
 
-use web\session\{Sessions, ISession};
+use web\session\Sessions;
 
-/** @test io.modelcontextprotocol.unittest.UseSessionTest */
-class UseSession extends Tokens {
+/** @test io.modelcontextprotocol.unittest.UseSessionsTest */
+class UseSessions extends Tokens {
   private $sessions;
 
   /** Reuses authentication session */
@@ -16,8 +16,10 @@ class UseSession extends Tokens {
    *
    * @see https://www.oauth.com/oauth2-servers/access-tokens/access-token-response/
    */
-  public function issue(string $issuer, array $flow, ISession $session): array {
-    $token= ['access_token' => $session->id(), 'expires_in' => $session->expires() - time()];
+  public function issue(string $issuer, array $flow, $user): array {
+    $session= $this->sessions->create();
+    $session->register('user', $user);
+    $token= ['access_token' => $session->id(), 'expires_in' => $this->sessions->duration()];
 
     // Scopes are optional
     if (!empty($flow['scopes'])) {
