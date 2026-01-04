@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.8.2 / 2026-01-04
+
+* Made compatible with `xp-forge/web-auth` version 7.0 - @thekid
+
 ## 0.8.1 / 2026-01-03
 
 * Continue OAuth without creating duplicate sessions, see this comment:
