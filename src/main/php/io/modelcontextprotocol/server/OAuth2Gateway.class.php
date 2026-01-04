@@ -134,8 +134,10 @@ class OAuth2Gateway {
             'redirect'  => $request->param('redirect_uri'),
             'method'    => $request->param('code_challenge_method'),
             'challenge' => $request->param('code_challenge'),
+            'scopes'    => explode(' ', $request->param('scope') ?? ''),
           ]);
-          $session->transmit($response);
+          $session->close();
+          $sessions->attach($session, $response);
           $request->rewrite($request->uri()->using()->path($this->continuation())->create());
           // Fall through
 
@@ -151,7 +153,8 @@ class OAuth2Gateway {
 
             // Register user in session
             $session->register('user', $request->value('user'));
-            $session->transmit($response);
+            $session->close();
+            $sessions->detach($session, $response);
 
             // Then, redirect to the specified redirect_uri
             return $this->redirect($response, sprintf(
@@ -206,12 +209,11 @@ class OAuth2Gateway {
           }
 
           // Invalidate the flow, clients may retry the above step (RFC 6749 §4.1.2 and §4.1.3)
-          $session->remove('flow');
-          $token= $this->tokens->issue((string)$request->uri()->base(), $flow['client'], $session);
-          $session->transmit($response);
-          
-          // Create token and return
-          return $this->result($response, ['token_type' => 'Bearer', 'access_token' => $token]);
+          $token= $this->tokens->issue((string)$request->uri()->base(), $flow, $session->value('user'));
+          $session->destroy();
+
+          // Create token response and return
+          return $this->result($response, ['token_type' => 'Bearer'] + $token);
 
         default:
           return $this->error($response, 'invalid_request', 'Cannot handle requests to '.$path);
@@ -224,8 +226,11 @@ class OAuth2Gateway {
     $handler= $target instanceof Handler ? $target : new Call($target);
     return function($request, $response) use($handler) {
       $r= sscanf($request->header('Authorization') ?? '', 'Bearer %s', $token);
-      if (1 === $r && ($user= $this->tokens->use($token))) {
-        return $handler->handle($request->pass('user', $user), $response);
+      if (1 === $r && ($pass= $this->tokens->use($token))) {
+        foreach ($pass as $name => $value) {
+          $request->pass($name, $value);
+        }
+        return $handler->handle($request, $response);
       }
 
       $response->answer(401);

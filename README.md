@@ -114,7 +114,7 @@ To add OAuth2 authentication to your server, use the following:
 
 ```php
 use io\modelcontextprotocol\McpServer;
-use io\modelcontextprotocol\server\{ImplementationsIn, OAuth2Gateway, Clients, UseSession};
+use io\modelcontextprotocol\server\{ImplementationsIn, OAuth2Gateway, Clients, UseSessions};
 use web\Application;
 use web\session\InFileSystem;
 
@@ -124,7 +124,7 @@ class Test extends Application {
     $clients= new class() extends Clients { /* TBI */ };
 
     $sessions= (new InFileSystem())->named('oauth');
-    $gateway= new OAuth2Gateway('/oauth', $clients, new UseSession($sessions));
+    $gateway= new OAuth2Gateway('/oauth', $clients, new UseSessions($sessions));
 
     $auth= /* Some class extending web.auth.Authentication */;
 
