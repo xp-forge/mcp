@@ -56,6 +56,20 @@ class ResultTest {
   }
 
   #[Test]
+  public function with_link() {
+    Assert::equals(
+      ['content' => [[
+        'type'        => 'resource_link',
+        'uri'         => 'file:///project/src/main.rs',
+        'name'        => 'main.rs',
+        'description' => 'Main',
+        'mimeType'    => 'text/x-rust',
+      ]]],
+      Result::success()->link('file:///project/src/main.rs', 'main.rs', 'Main', 'text/x-rust')->struct()
+    );
+  }
+
+  #[Test]
   public function structured() {
     $object= ['temperature' => 22.5, 'conditions' => 'Partly cloudy', 'humidity' => 65];
     Assert::equals(

@@ -87,4 +87,21 @@ class Result {
   public function audio($data, $mime, $annotations= []): self {
     return $this->add('audio', ['data' => base64_encode($data), 'mimeType' => $mime], $annotations);
   }
+
+  /**
+   * Adds a resource link
+   *
+   * @param  string $uri
+   * @param  string $name
+   * @param  string $description
+   * @param  string $mime
+   * @param  [:mixed] $annotations
+   */
+  public function link($uri, $name, $description, $mime, $annotations= []): self {
+    return $this->add(
+      'resource_link',
+      ['uri' => $uri, 'name' => $name, 'description' => $description, 'mimeType' => $mime],
+      $annotations
+    );
+  }
 }
