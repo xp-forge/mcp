@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Fixed issue #16: Empty parameters being serialized as array, not as
+  object, by adding a requirement on the xp-forge/json library 6.0+
+  (@thekid)
+
 ## 0.9.0 / 2026-01-04
 
 * Renamed *UseSession* to `UseSessions` to clarify usage - @thekid
