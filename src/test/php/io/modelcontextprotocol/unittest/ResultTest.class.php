@@ -96,4 +96,24 @@ class ResultTest {
       Result::structured($object)->struct()
     );
   }
+
+  #[Test]
+  public function cast_scalar() {
+    Assert::equals(
+      ['content' => [['type' => 'text', 'text' => 'Test']]],
+      Result::success()->cast('Test')->struct()
+    );
+  }
+
+  #[Test]
+  public function cast_object() {
+    $object= ['temperature' => 22.5, 'conditions' => 'Partly cloudy', 'humidity' => 65];
+    Assert::equals(
+      [
+        'structuredContent' => $object,
+        'content'           => [['type' => 'text', 'text' => json_encode($object)]],
+      ],
+      Result::success()->cast($object)->struct()
+    );
+  }
 }
