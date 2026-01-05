@@ -1,6 +1,6 @@
 <?php namespace io\modelcontextprotocol;
 
-use io\modelcontextprotocol\server\{Delegate, JsonRpc, Response};
+use io\modelcontextprotocol\server\{Delegate, JsonRpc, Response, Result};
 use lang\FormatException;
 use text\json\Json;
 use util\NoSuchElementException;
@@ -51,11 +51,7 @@ class McpServer implements Handler, Traceable {
       },
       'tools/call' => function($payload, $request) {
         if ($invokeable= $this->delegate->invokeable($payload['params']['name'])) {
-          $result= $invokeable((array)$payload['params']['arguments'], $request);
-          return ['content' => [['type' => 'text', 'text' => is_string($result)
-            ? $result
-            : Json::of($result)
-          ]]];
+          return Result::cast($invokeable((array)$payload['params']['arguments'], $request))->struct();
         }
         throw new NoSuchElementException($payload['params']['name']);
       },
