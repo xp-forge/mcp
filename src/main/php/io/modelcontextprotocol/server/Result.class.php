@@ -49,11 +49,10 @@ class Result {
 
   /** Adds a given typed content */
   public function add(string $type, array $struct, array $annotations= []): self {
-    $this->struct['content'][]= [
-      'type' => $type,
-      ...$struct,
-      ...($annotations ? ['annotations' => $annotations] : [])
-    ];
+    $this->struct['content'][]= ['type' => $type] + $struct + ($annotations
+      ? ['annotations' => $annotations]
+      : []
+    );
     return $this;
   }
 
