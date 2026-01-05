@@ -3,6 +3,8 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.10.0 / 2026-01-05
+
 * Added unhandled exceptions to server logfile, implementing feature
   suggest in issue #15
   (@thekid)
