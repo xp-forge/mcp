@@ -15,9 +15,6 @@ class Result {
   /** Creates a new result with the given structure */
   public function __construct(array $struct) { $this->struct= $struct; }
 
-  /** Returns the structure */
-  public function struct(): array { return $this->struct; }
-
   /** Maps a value to result */
   private static function of($value) {
     if (null === $value) {
@@ -132,4 +129,7 @@ class Result {
       $annotations
     );
   }
+
+  /** Returns the structure */
+  public function struct(): array { return $this->struct; }
 }
