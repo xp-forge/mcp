@@ -104,4 +104,20 @@ class Result {
       $annotations
     );
   }
+
+  /**
+   * Adds an embedded resource
+   *
+   * @param  string $uri
+   * @param  string $mime
+   * @param  string|util.Bytes $text
+   * @param  [:mixed] $annotations
+   */
+  public function resource($uri, $mime, $text, $annotations= []): self {
+    return $this->add(
+      'resource',
+      ['resource' => ['uri' => $uri, 'mimeType' => $mime, 'text' => (string)$text]],
+      $annotations
+    );
+  }
 }

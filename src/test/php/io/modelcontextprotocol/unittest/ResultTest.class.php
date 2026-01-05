@@ -56,7 +56,7 @@ class ResultTest {
   }
 
   #[Test]
-  public function with_link() {
+  public function with_resource_link() {
     Assert::equals(
       ['content' => [[
         'type'        => 'resource_link',
@@ -66,6 +66,22 @@ class ResultTest {
         'mimeType'    => 'text/x-rust',
       ]]],
       Result::success()->link('file:///project/src/main.rs', 'main.rs', 'Main', 'text/x-rust')->struct()
+    );
+  }
+
+  #[Test]
+  public function with_embedded_resource() {
+    $code= "fn main() {\n    println!(\"Hello world!\");\n}";
+    Assert::equals(
+      ['content' => [[
+        'type'        => 'resource',
+        'resource'    => [
+          'uri'         => 'file:///project/src/main.rs',
+          'mimeType'    => 'text/x-rust',
+          'text'        => $code,
+        ],
+      ]]],
+      Result::success()->resource('file:///project/src/main.rs', 'text/x-rust', $code)->struct()
     );
   }
 
