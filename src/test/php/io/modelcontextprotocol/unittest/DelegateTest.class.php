@@ -13,6 +13,14 @@ abstract class DelegateTest {
   public function tools() {
     Assert::equals(
       [[
+        'name'        => 'greetings_languages',
+        'description' => 'Languages greetings', // Generated!
+        'inputSchema' => [
+          'type'       => 'object',
+          'properties' => (object)[],
+          'required'   => [],
+        ]
+      ], [
         'name'        => 'greetings_repeat',
         'description' => 'Repeats a given greeting',
         'inputSchema' => [

@@ -35,6 +35,11 @@ class Greetings {
     return "Write a {$style} greeting for {$name}";
   }
 
+  #[Tool]
+  public function languages() {
+    return ['en', 'de'];
+  }
+
   /** Repeats a given greeting */
   #[Tool]
   public function repeat(
