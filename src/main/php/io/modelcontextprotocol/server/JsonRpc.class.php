@@ -116,7 +116,10 @@ class JsonRpc implements Handler, Traceable {
       $this->cat && $this->cat->warn('<<<', $e);
       $this->error($response, $payload['id'] ?? null, self::PARSE_ERROR, $e->getMessage());
     } catch (Any $e) {
-      $this->cat && $this->cat->warn('<<<', Throwable::wrap($e));
+      $error= Throwable::wrap($e);
+      $response->trace('error', $error);
+
+      $this->cat && $this->cat->warn('<<<', $error);
       $this->error($response, $payload['id'] ?? null, self::INVALID_REQUEST, $e->getMessage());
     } finally {
       $input->close();

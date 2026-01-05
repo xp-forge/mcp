@@ -3,6 +3,9 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Added unhandled exceptions to server logfile, implementing feature
+  suggest in issue #15
+  (@thekid)
 * Fixed issue #16: Empty parameters being serialized as array, not as
   object, by adding a requirement on the xp-forge/json library 6.0+
   (@thekid)
