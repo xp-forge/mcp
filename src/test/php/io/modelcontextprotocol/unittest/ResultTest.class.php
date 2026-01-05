@@ -16,6 +16,22 @@ class ResultTest {
   }
 
   #[Test]
+  public function success_with_text() {
+    Assert::equals(
+      ['content' => [['type' => 'text', 'text' => 'It worked']]],
+      Result::success('It worked')->struct()
+    );
+  }
+
+  #[Test]
+  public function error_with_text() {
+    Assert::equals(
+      ['content' => [['type' => 'text', 'text' => 'Error 404']], 'isError' => true],
+      Result::error('Error 404')->struct()
+    );
+  }
+
+  #[Test]
   public function add() {
     Assert::equals(
       ['content' => [['type' => 'text', 'text' => 'Test']]],

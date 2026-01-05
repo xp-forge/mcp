@@ -18,29 +18,41 @@ class Result {
   /** Returns the structure */
   public function struct(): array { return $this->struct; }
 
+  /** Maps a value to result */
+  private static function of($value) {
+    if (null === $value) {
+      return ['content' => []];
+    } else if (is_scalar($value)) {
+      return ['content' => [['type' => 'text', 'text' => (string)$value]]];
+    } else {
+      return [
+        'structuredContent' => $value,
+        'content'           => [['type' => 'text', 'text' => json_encode($value)]],
+      ];
+    }
+  }
+
   /** Creates a result from a given value */
   public static function cast($value): self {
     if ($value instanceof self) {
       return $value;
-    } else if (is_scalar($value)) {
-      return self::success()->text($value);
     } else {
-      return self::structured($value);
+      return new self(self::of($value));
     }
   }
 
   /** Creates a success result */
-  public static function success(): self {
-    return new self(['content' => []]);
+  public static function success($value= null): self {
+    return new self(self::of($value));
   }
 
   /** Creates an error result */
-  public static function error(): self {
-    return new self(['content' => [], 'isError' => true]);
+  public static function error($value= null): self {
+    return new self(self::of($value) + ['isError' => true]);
   }
 
   /** Creates an special unstructured result including a textual JSON-encoded representation */
-  public static function structured(array $object): self {
+  public static function structured($object): self {
     return new self([
       'structuredContent' => $object,
       'content'           => [['type' => 'text', 'text' => json_encode($object)]],
