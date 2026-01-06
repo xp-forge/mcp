@@ -1,6 +1,6 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
-use io\modelcontextprotocol\server\{Tool, Param, Value};
+use io\modelcontextprotocol\server\{Tool, Param, Value, Result};
 use lang\IllegalStateException;
 use test\{Assert, Test};
 
@@ -75,6 +75,22 @@ class McpServerToolCallingTest extends McpServerMethodsTest {
 
     Assert::equals(
       '{"jsonrpc":"2.0","id":"1","result":{"content":[{"type":"text","text":"Hello 6100"}]}}',
+      $answer
+    );
+  }
+
+  #[Test]
+  public function tool_with_result() {
+    $answer= $this->method('tools/call', ['name' => 'test_fixture', 'arguments' => []], new class() {
+
+      #[Tool]
+      public function fixture() {
+        return Result::success()->text('Hi', ['audience' => ['user']]);
+      }
+    });
+
+    Assert::equals(
+      '{"jsonrpc":"2.0","id":"1","result":{"content":[{"type":"text","text":"Hi","annotations":{"audience":["user"]}}]}}',
       $answer
     );
   }
