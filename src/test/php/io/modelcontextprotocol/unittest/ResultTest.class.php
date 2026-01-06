@@ -4,15 +4,11 @@ use io\modelcontextprotocol\server\Result;
 use test\{Assert, Test};
 
 class ResultTest {
+  const OBJECT= ['temperature' => 22.5, 'conditions' => 'Partly cloudy', 'humidity' => 65];
 
   #[Test]
   public function success() {
     Assert::equals(['content' => []], Result::success()->struct());
-  }
-
-  #[Test]
-  public function error() {
-    Assert::equals(['content' => [], 'isError' => true], Result::error()->struct());
   }
 
   #[Test]
@@ -24,10 +20,38 @@ class ResultTest {
   }
 
   #[Test]
+  public function success_with_object() {
+    Assert::equals(
+      [
+        'structuredContent' => self::OBJECT,
+        'content'           => [['type' => 'text', 'text' => json_encode(self::OBJECT)]],
+      ],
+      Result::success(self::OBJECT)->struct()
+    );
+  }
+
+  #[Test]
+  public function error() {
+    Assert::equals(['content' => [], 'isError' => true], Result::error()->struct());
+  }
+
+  #[Test]
   public function error_with_text() {
     Assert::equals(
       ['content' => [['type' => 'text', 'text' => 'Error 404']], 'isError' => true],
       Result::error('Error 404')->struct()
+    );
+  }
+
+  #[Test]
+  public function error_with_object() {
+    Assert::equals(
+      [
+        'structuredContent' => self::OBJECT,
+        'content'           => [['type' => 'text', 'text' => json_encode(self::OBJECT)]],
+        'isError'           => true,
+      ],
+      Result::error(self::OBJECT)->struct()
     );
   }
 
@@ -103,13 +127,12 @@ class ResultTest {
 
   #[Test]
   public function structured() {
-    $object= ['temperature' => 22.5, 'conditions' => 'Partly cloudy', 'humidity' => 65];
     Assert::equals(
       [
-        'structuredContent' => $object,
-        'content'           => [['type' => 'text', 'text' => json_encode($object)]],
+        'structuredContent' => self::OBJECT,
+        'content'           => [['type' => 'text', 'text' => json_encode(self::OBJECT)]],
       ],
-      Result::structured($object)->struct()
+      Result::structured(self::OBJECT)->struct()
     );
   }
 
@@ -123,13 +146,12 @@ class ResultTest {
 
   #[Test]
   public function cast_object() {
-    $object= ['temperature' => 22.5, 'conditions' => 'Partly cloudy', 'humidity' => 65];
     Assert::equals(
       [
-        'structuredContent' => $object,
-        'content'           => [['type' => 'text', 'text' => json_encode($object)]],
+        'structuredContent' => self::OBJECT,
+        'content'           => [['type' => 'text', 'text' => json_encode(self::OBJECT)]],
       ],
-      Result::success()->cast($object)->struct()
+      Result::success()->cast(self::OBJECT)->struct()
     );
   }
 }
