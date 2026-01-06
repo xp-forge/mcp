@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Merged PR #17: New `io.modelcontextprotocol.server.Result` class
+  giving fine-grained control over tool-call results, see #13.
+  (@thekid)
+
 ## 0.10.0 / 2026-01-05
 
 * Added unhandled exceptions to server logfile, implementing feature
