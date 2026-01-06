@@ -3,6 +3,9 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Fixed `UseSessions` not correctly writing sessions with delayed
+  persistence
+  (@thekid)
 * Merged PR #17: New `io.modelcontextprotocol.server.Result` class
   giving fine-grained control over tool-call results, see #13.
   (@thekid)

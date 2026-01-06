@@ -27,6 +27,7 @@ class UseSessions extends Tokens {
       $token['scope']= implode(' ', $flow['scopes']);
     }
 
+    $session->close();
     return $token;
   }
 
