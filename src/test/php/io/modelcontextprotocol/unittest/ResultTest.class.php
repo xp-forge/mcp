@@ -93,11 +93,11 @@ class ResultTest {
         'type'        => 'resource',
         'resource'    => [
           'uri'         => 'file:///project/src/main.rs',
-          'mimeType'    => 'text/x-rust',
           'text'        => $code,
+          'mimeType'    => 'text/x-rust',
         ],
       ]]],
-      Result::success()->resource('file:///project/src/main.rs', 'text/x-rust', $code)->struct()
+      Result::success()->resource('file:///project/src/main.rs', $code, 'text/x-rust')->struct()
     );
   }
 

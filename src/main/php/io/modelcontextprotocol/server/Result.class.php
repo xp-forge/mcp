@@ -118,14 +118,14 @@ class Result {
    * Adds an embedded resource
    *
    * @param  string $uri
-   * @param  string $mime
    * @param  string|util.Bytes $text
+   * @param  string $mime
    * @param  [:mixed] $annotations
    */
-  public function resource($uri, $mime, $text, $annotations= []): self {
+  public function resource($uri, $text, $mime, $annotations= []): self {
     return $this->add(
       'resource',
-      ['resource' => ['uri' => $uri, 'mimeType' => $mime, 'text' => (string)$text]],
+      ['resource' => ['uri' => $uri, 'text' => (string)$text, 'mimeType' => $mime]],
       $annotations
     );
   }
