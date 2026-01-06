@@ -22,10 +22,7 @@ class ResultTest {
   #[Test]
   public function success_with_object() {
     Assert::equals(
-      [
-        'structuredContent' => self::OBJECT,
-        'content'           => [['type' => 'text', 'text' => json_encode(self::OBJECT)]],
-      ],
+      ['structuredContent' => self::OBJECT],
       Result::success(self::OBJECT)->struct()
     );
   }
@@ -46,11 +43,7 @@ class ResultTest {
   #[Test]
   public function error_with_object() {
     Assert::equals(
-      [
-        'structuredContent' => self::OBJECT,
-        'content'           => [['type' => 'text', 'text' => json_encode(self::OBJECT)]],
-        'isError'           => true,
-      ],
+      ['structuredContent' => self::OBJECT, 'isError' => true],
       Result::error(self::OBJECT)->struct()
     );
   }
@@ -137,6 +130,34 @@ class ResultTest {
   }
 
   #[Test]
+  public function structured_with_text() {
+    $text= 'Temperature: 22.5°, partly cloudy with a humidity of 65';
+    Assert::equals(
+      [
+        'structuredContent' => self::OBJECT,
+        'content'           => [['type' => 'text', 'text' => $text]],
+      ],
+      Result::structured(self::OBJECT, $text)->struct()
+    );
+  }
+
+  #[Test]
+  public function structured_with_iterable() {
+    $text= ['Temperature: 22.5°', 'Conditions: partly cloudy', 'Humidity: 65'];
+    Assert::equals(
+      [
+        'content'           => [
+          ['type' => 'text', 'text' => $text[0]],
+          ['type' => 'text', 'text' => $text[1]],
+          ['type' => 'text', 'text' => $text[2]],
+        ],
+        'structuredContent' => self::OBJECT,
+      ],
+      Result::structured(self::OBJECT, $text)->struct()
+    );
+  }
+
+  #[Test]
   public function cast_scalar() {
     Assert::equals(
       ['content' => [['type' => 'text', 'text' => 'Test']]],
@@ -147,10 +168,7 @@ class ResultTest {
   #[Test]
   public function cast_object() {
     Assert::equals(
-      [
-        'structuredContent' => self::OBJECT,
-        'content'           => [['type' => 'text', 'text' => json_encode(self::OBJECT)]],
-      ],
+      ['structuredContent' => self::OBJECT],
       Result::success()->cast(self::OBJECT)->struct()
     );
   }

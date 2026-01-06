@@ -22,20 +22,13 @@ class Result {
     } else if (is_scalar($value)) {
       return ['content' => [['type' => 'text', 'text' => (string)$value]]];
     } else {
-      return [
-        'structuredContent' => $value,
-        'content'           => [['type' => 'text', 'text' => json_encode($value)]],
-      ];
+      return ['structuredContent' => $value];
     }
   }
 
   /** Creates a result from a given value */
   public static function cast($value): self {
-    if ($value instanceof self) {
-      return $value;
-    } else {
-      return new self(self::of($value));
-    }
+    return $value instanceof self ? $value : new self(self::of($value));
   }
 
   /** Creates a success result */
@@ -48,12 +41,27 @@ class Result {
     return new self(self::of($value) + ['isError' => true]);
   }
 
-  /** Creates an special unstructured result including a textual JSON-encoded representation */
-  public static function structured($object): self {
-    return new self([
-      'structuredContent' => $object,
-      'content'           => [['type' => 'text', 'text' => json_encode($object)]],
-    ]);
+  /**
+   * Creates an special structured result including a textual representation,
+   * which defaults to a JSON-serialized version of the given object.
+   *
+   * @param  var $object
+   * @param  ?string|iterable $text
+   */
+  public static function structured($object, $text= null): self {
+    $self= new self(['content' => [], 'structuredContent' => $object]);
+
+    if (null === $text) {
+      $self->text(json_encode($object));
+    } else if (is_iterable($text)) {
+      foreach ($text as $part) {
+        $self->text($part);
+      }
+    } else {
+      $self->text($text);
+    }
+
+    return $self;
   }
 
   /** Adds a given typed content */
