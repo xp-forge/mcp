@@ -158,6 +158,19 @@ class ResultTest {
   }
 
   #[Test]
+  public function structured_with_error() {
+    $error= ['code' => 'INVALID_DEPARTURE_DATE', 'message' => 'Departure date must be in the future'];
+    Assert::equals(
+      [
+        'structuredContent' => ['error' => $error],
+        'content'           => [['type' => 'text', 'text' => $error['message']]],
+        'isError'           => true,
+      ],
+      Result::structured(['error' => $error], $error['message'], true)->struct()
+    );
+  }
+
+  #[Test]
   public function cast_scalar() {
     Assert::equals(
       ['content' => [['type' => 'text', 'text' => 'Test']]],

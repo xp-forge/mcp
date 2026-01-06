@@ -47,8 +47,9 @@ class Result {
    *
    * @param  var $object
    * @param  ?string|iterable $text
+   * @param  ?bool $isError
    */
-  public static function structured($object, $text= null): self {
+  public static function structured($object, $text= null, $isError= null): self {
     $self= new self(['content' => [], 'structuredContent' => $object]);
 
     if (null === $text) {
@@ -61,6 +62,7 @@ class Result {
       $self->text($text);
     }
 
+    isset($isError) && $self->struct['isError']= (bool)$isError;
     return $self;
   }
 
