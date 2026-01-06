@@ -3,6 +3,8 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.11.0 / 2026-01-06
+
 * Fixed `UseSessions` not correctly writing sessions with delayed
   persistence
   (@thekid)
