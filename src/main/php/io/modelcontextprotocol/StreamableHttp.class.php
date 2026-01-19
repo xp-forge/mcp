@@ -2,6 +2,7 @@
 
 use lang\FormatException;
 use webservices\rest\Endpoint;
+use util\URI;
 
 /**
  * Streamable HTTP MCP transport
@@ -14,11 +15,23 @@ class StreamableHttp extends Transport {
   const EVENTSTREAM = 'text/event-stream';
   const SESSION     = 'Mcp-Session-Id';
 
-  private $endpoint;
+  private $endpoint, $path;
 
   /** @param string|util.URI|webservices.rest.Endpoint $endpoint */
   public function __construct($endpoint) {
-    $this->endpoint= $endpoint instanceof Endpoint ? $endpoint : new Endpoint($endpoint);
+
+    // Use path from endpoint to prevent trailing `/` being added
+    if ($endpoint instanceof Endpoint) {
+      $this->endpoint= $endpoint;
+      $this->path= $endpoint->base()->path();
+    } else if ($endpoint instanceof URI) {
+      $this->endpoint= new Endpoint($endpoint);
+      $this->path= $endpoint->path();
+    } else {
+      $this->endpoint= new Endpoint($endpoint);
+      $this->path= (new URI($endpoint))->path();
+    }
+
     $this->endpoint->with(['Accept' => 'text/event-stream, application/json']);
   }
 
@@ -40,7 +53,7 @@ class StreamableHttp extends Transport {
    * @throws io.modelcontextprotocol.CallFailed
    */
   public function notify($method) {
-    $response= $this->endpoint->resource('/mcp')->post(['jsonrpc' => '2.0', 'method' => $method], self::JSON);
+    $response= $this->endpoint->resource($this->path)->post(['jsonrpc' => '2.0', 'method' => $method], self::JSON);
     if (202 !== $response->status()) throw new CallFailed($response->status(), $response->content());
   }
 
@@ -53,7 +66,7 @@ class StreamableHttp extends Transport {
    * @throws lang.FormatException
    */
   public function call($method, $params= null) {
-    call: $response= $this->endpoint->resource('/mcp')->post(
+    call: $response= $this->endpoint->resource($this->path)->post(
       ['jsonrpc' => '2.0', 'id' => uniqid(), 'method' => $method, 'params' => $params ?? (object)[]],
       self::JSON
     );
@@ -94,7 +107,7 @@ class StreamableHttp extends Transport {
 
     // Clients that no longer need a particular session SHOULD send an HTTP DELETE to the
     // MCP endpoint with the Mcp-Session-Id header, to explicitly terminate the session
-    $this->endpoint->resource('/mcp')->delete();
+    $this->endpoint->resource($this->path)->delete();
     $this->endpoint->with(self::SESSION, null);
   }
 }

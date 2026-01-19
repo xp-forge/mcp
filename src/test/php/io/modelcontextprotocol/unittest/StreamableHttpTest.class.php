@@ -8,9 +8,9 @@ use webservices\rest\TestEndpoint;
 class StreamableHttpTest {
   use JsonRpc;
 
-  private function newFixture(array &$sessions): StreamableHttp {
-    return new StreamableHttp(new TestEndpoint([
-      'POST /mcp' => function($call) use(&$sessions) {
+  private function newFixture(array &$sessions, string $base= '/mcp'): StreamableHttp {
+    $routes= [
+      "POST {$base}" => function($call) use(&$sessions) {
 
         // Create session on intialization, destroy when logout is called
         $headers= ['Content-Type' => 'application/json'];
@@ -36,20 +36,21 @@ class StreamableHttpTest {
             return $call->respond(200, 'OK', $headers, $this->result(true));
         }
       },
-      'DELETE /mcp' => function($call) use(&$sessions) {
+      "DELETE {$base}" => function($call) use(&$sessions) {
         $id= $call->request()->header(StreamableHttp::SESSION);
         $sessions[$id]['active']= false;
         $sessions[$id]['calls'][]= '$close';
         return $call->respond(204, 'No Content', [], null);
       }
-    ]));
+    ];
+    return new StreamableHttp(new TestEndpoint($routes, $base));
   }
 
   #[Test, Values(['application/json', 'application/json; charset=utf-8'])]
   public function json($type) {
     $value= ['name' => 'test', 'version' => '1.0.0'];
     $fixture= new StreamableHttp(new TestEndpoint([
-      '/mcp' => fn($call) => $call->respond(200, 'OK', ['Content-Type' => $type], $this->result($value))
+      '/' => fn($call) => $call->respond(200, 'OK', ['Content-Type' => $type], $this->result($value))
     ]));
 
     Assert::equals($value, $fixture->call('test')->current()->value());
@@ -59,7 +60,7 @@ class StreamableHttpTest {
   public function event_stream($type) {
     $value= ['name' => 'test', 'version' => '1.0.0'];
     $fixture= new StreamableHttp(new TestEndpoint([
-      '/mcp' => fn($call) => $call->respond(200, 'OK', ['Content-Type' => $type], implode("\n", [
+      '/' => fn($call) => $call->respond(200, 'OK', ['Content-Type' => $type], implode("\n", [
         'event: message',
         'data: '.$this->result($value)
       ]))
@@ -71,7 +72,7 @@ class StreamableHttpTest {
   #[Test]
   public function multiple_events() {
     $fixture= new StreamableHttp(new TestEndpoint([
-      '/mcp' => fn($call) => $call->respond(200, 'OK', ['Content-Type' => 'text/event-stream'], implode("\n", [
+      '/' => fn($call) => $call->respond(200, 'OK', ['Content-Type' => 'text/event-stream'], implode("\n", [
         'event: message',
         'data: '.$this->result('one'),
         '',
@@ -90,7 +91,7 @@ class StreamableHttpTest {
   #[Test, Expect(class: FormatException::class, message: 'Unexpected content type "text/plain"')]
   public function unexpected_content_type() {
     $fixture= new StreamableHttp(new TestEndpoint([
-      '/mcp' => fn($call) => $call->respond(200, 'OK', ['Content-Type' => 'text/plain'], 'Test')
+      '/' => fn($call) => $call->respond(200, 'OK', ['Content-Type' => 'text/plain'], 'Test')
     ]));
     $fixture->call('test')->next();
   }
@@ -98,15 +99,15 @@ class StreamableHttpTest {
   #[Test]
   public function http_errors() {
     $fixture= new StreamableHttp(new TestEndpoint([
-      '/mcp' => fn($call) => $call->respond(404, 'Not found', ['Content-Type' => 'text/plain'], 'Not found: /mcp')
+      '/' => fn($call) => $call->respond(404, 'Not found', ['Content-Type' => 'text/plain'], 'Not found: /')
     ]));
-    Assert::equals([404 => 'Not found: /mcp'], iterator_to_array($fixture->call('test')));
+    Assert::equals([404 => 'Not found: /'], iterator_to_array($fixture->call('test')));
   }
 
-  #[Test]
-  public function session_handling() {
+  #[Test, Values(['/mcp', '/services/v1/mcp'])]
+  public function session_handling($base) {
     $sessions= [];
-    $fixture= $this->newFixture($sessions);
+    $fixture= $this->newFixture($sessions, $base);
 
     $fixture->call('initialize')->next();
     $fixture->call('tools/list')->next();
