@@ -45,6 +45,21 @@ class StreamableHttp extends Transport {
     $this->endpoint->with(['MCP-Protocol-Version' => $version]);
   }
 
+  /** @return [:string] */
+  public function headers() { return $this->endpoint->headers(); }
+
+  /**
+   * Adds headers to be sent with every request
+   *
+   * @param  string|[:string] $arg
+   * @param  ?string $value
+   * @return self
+   */
+  public function with($arg, $value= null) {
+    $this->endpoint->with($arg, $value);
+    return $this;
+  }
+
   /**
    * Sends a notification
    *

@@ -46,6 +46,32 @@ class StreamableHttpTest {
     return new StreamableHttp(new TestEndpoint($routes, $base));
   }
 
+  #[Test]
+  public function accepts_json_and_event_stream_by_default() {
+    Assert::equals(
+      'text/event-stream, application/json',
+      (new StreamableHttp('https://example.com/'))->headers()['Accept']
+    );
+  }
+
+  #[Test]
+  public function pass_header() {
+    $token= 'Token test';
+    Assert::equals($token, (new StreamableHttp('https://example.com/'))
+      ->with('Authorization', $token)
+      ->headers()['Authorization']
+    );
+  }
+
+  #[Test]
+  public function pass_headers() {
+    $token= 'Token test';
+    Assert::equals($token, (new StreamableHttp('https://example.com/'))
+      ->with(['Authorization' => $token])
+      ->headers()['Authorization']
+    );
+  }
+
   #[Test, Values(['application/json', 'application/json; charset=utf-8'])]
   public function json($type) {
     $value= ['name' => 'test', 'version' => '1.0.0'];
