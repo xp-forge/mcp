@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Merged PR #18: Make it possible to supply custom headers along with
+  StreamableHttp
+  (@thekid)
+
 ## 0.11.1 / 2026-01-19
 
 * Fixed client interactions with MCP servers not running under `/`
