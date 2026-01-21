@@ -6,6 +6,15 @@ use test\{Assert, Test};
 
 class EventStreamTest {
 
+  /** Helper */
+  private function allOf($stream) {
+    $r= [];
+    foreach ($stream as $event => $data) {
+      $r[]= [$event, $data];
+    }
+    return $r;
+  }
+
   #[Test]
   public function can_create() {
     new EventStream(new MemoryInputStream(''));
@@ -17,7 +26,7 @@ class EventStreamTest {
       data: {"jsonrpc": "2.0", "id": "6100", "result": "Test"}
       EVENT_STREAM
     ));
-    Assert::equals(['' => new Result('Test')], iterator_to_array($stream));
+    Assert::equals([[null, new Result('Test')]], $this->allOf($stream));
   }
 
   #[Test]
@@ -27,7 +36,7 @@ class EventStreamTest {
       data: {"jsonrpc": "2.0", "id": "6100", "result": "Test"}
       EVENT_STREAM
     ));
-    Assert::equals(['message' => new Result('Test')], iterator_to_array($stream));
+    Assert::equals([['message', new Result('Test')]], $this->allOf($stream));
   }
 
   #[Test]
@@ -36,6 +45,6 @@ class EventStreamTest {
       data: {"jsonrpc": "2.0", "id": "6100", "result": {}}
       EVENT_STREAM
     ));
-    Assert::equals(['' => new Result((object)[])], iterator_to_array($stream));
+    Assert::equals([[null, new Result((object)[])]], $this->allOf($stream));
   }
 }
