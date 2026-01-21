@@ -2,7 +2,9 @@
 
 use Traversable;
 use io\streams\{InputStream, StringReader};
+use text\json\StringInput;
 
+/** @test io.modelcontextprotocol.unittest.EventStreamTest */
 class EventStream extends Outcome {
   private $stream;
 
@@ -22,7 +24,7 @@ class EventStream extends Outcome {
       if (0 === strncmp($line, 'event: ', 6)) {
         $event= substr($line, 7);
       } else if (0 === strncmp($line, 'data: ', 5)) {
-        yield $event => Outcome::from(json_decode(substr($line, 6), true));
+        yield $event => Outcome::from((new StringInput(substr($line, 6)))->read());
         $event= null;
       }
     }

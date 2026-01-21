@@ -3,6 +3,9 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Fixed JSON deserialization in standard I/O and event streams, using
+  the `xp-forge/json` library
+  (@thekid)
 * Merged PR #18: Make it possible to supply custom headers along with
   StreamableHttp
   (@thekid)

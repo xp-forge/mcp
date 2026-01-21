@@ -1,6 +1,7 @@
 <?php namespace io\modelcontextprotocol;
 
 use lang\{Process, IllegalStateException};
+use text\json\StringInput;
 
 /**
  * Standard I/O transport
@@ -84,7 +85,7 @@ class StdIo extends Transport {
     $this->buffer= substr($this->buffer, $p);
     $this->cat && $this->cat->debug('<<<', $response);
 
-    yield 'result' => Outcome::from(json_decode($response, true));
+    yield 'result' => Outcome::from((new StringInput($response))->read());
   }
 
   /** @return void */
