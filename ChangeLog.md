@@ -3,6 +3,8 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.12.0 / 2026-01-21
+
 * Fixed JSON deserialization in standard I/O and event streams, using
   the `xp-forge/json` library
   (@thekid)
