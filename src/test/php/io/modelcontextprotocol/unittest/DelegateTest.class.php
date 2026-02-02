@@ -21,6 +21,15 @@ abstract class DelegateTest {
           'required'   => [],
         ]
       ], [
+        'name'        => 'greetings_launch',
+        'description' => 'Launches greeting card designer',
+        'inputSchema' => [
+          'type'       => 'object',
+          'properties' => (object)[],
+          'required'   => [],
+        ],
+        '_meta' => ['ui' => ['resourceUri' => 'ui://greeting/card']],
+      ], [
         'name'        => 'greetings_repeat',
         'description' => 'Repeats a given greeting',
         'inputSchema' => [

@@ -46,6 +46,12 @@ class Greetings {
     return ['en', 'de'];
   }
 
+  /** Launches greeting card designer */
+  #[Tool, Meta(['ui' => ['resourceUri' => 'ui://greeting/card']])]
+  public function launch() {
+    return 'App launching...';
+  }
+
   /** Repeats a given greeting */
   #[Tool]
   public function repeat(
