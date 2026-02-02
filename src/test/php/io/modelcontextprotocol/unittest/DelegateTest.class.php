@@ -89,6 +89,13 @@ abstract class DelegateTest {
           'description' => 'Greeting icon',
           'mimeType'    => 'image/gif',
           'dynamic'     => true,
+        ],
+        [
+          'uri'         => 'ui://greeting/card',
+          'name'        => 'greetings_card',
+          'description' => 'Greeting card',
+          'mimeType'    => 'text/html;profile=mcp-app',
+          'dynamic'     => false,
         ]
       ],
       [...$this->fixture()->resources(false)]
@@ -121,6 +128,19 @@ abstract class DelegateTest {
     Assert::equals(
       [['uri' => 'greeting://icon', 'mimeType' => 'image/gif', 'blob' => 'R0lGODkuLi4=']],
       $this->fixture()->readable('greeting://icon')([], new Request(new TestInput('GET', '/')))
+    );
+  }
+
+  #[Test]
+  public function read_app_resource() {
+    Assert::equals(
+      [[
+        'uri'      => 'ui://greeting/card',
+        'mimeType' => 'text/html;profile=mcp-app',
+        'text'     => '<html>...</html>',
+        '_meta'    => ['ui' => ['prefersBorder' => true]],
+      ]],
+      $this->fixture()->readable('ui://greeting/card')([], new Request(new TestInput('GET', '/')))
     );
   }
 

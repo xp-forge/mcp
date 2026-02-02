@@ -1,6 +1,6 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
-use io\modelcontextprotocol\server\{Implementation, Resource, Prompt, Tool, Param, Value};
+use io\modelcontextprotocol\server\{Implementation, Resource, Meta, Prompt, Tool, Param, Value};
 use util\Bytes;
 
 #[Implementation]
@@ -22,6 +22,12 @@ class Greetings {
   #[Resource('greeting://user/{name}')]
   public function get($name) {
     return "Hello {$name}";
+  }
+
+  /** Greeting card */
+  #[Resource('ui://greeting/card', 'text/html;profile=mcp-app')]
+  public function card() {
+    return ['text' => '<html>...</html>', '_meta' => ['ui' => ['prefersBorder' => true]]];
   }
 
   /** Greets users */

@@ -59,7 +59,7 @@ abstract class Delegate {
           'properties' => $properties ?: (object)[],
           'required'   => $required,
         ],
-      ];
+      ] + (($meta= $method->annotation(Meta::class)) ? ['_meta' => $meta->argument(0)] : []);
     }
   }
 
@@ -91,7 +91,7 @@ abstract class Delegate {
         'name'        => $namespace.'_'.$name,
         'description' => $method->comment() ?? ucfirst($name).' '.$namespace,
         'arguments'   => $arguments,
-      ];
+      ] + (($meta= $method->annotation(Meta::class)) ? ['_meta' => $meta->argument(0)] : []);
     }
   }
 
@@ -103,19 +103,22 @@ abstract class Delegate {
         $templates === $resource->template && yield $resource->meta + [
           'name'        => $namespace.'_'.$name,
           'description' => $method->comment() ?? null,
-        ];
+        ] + (($meta= $method->annotation(Meta::class)) ? ['_meta' => $meta->argument(0)] : []);
       }
     }
   }
 
   /** Returns contents of a given resource */
   protected function contentsOf(string $uri, string $mimeType, $result) {
-    return [
-      ['uri' => $uri, 'mimeType' => $mimeType] + ($result instanceof Bytes
-        ? ['blob' => base64_encode($result)]
-        : ['text' => $result]
-      )
-    ];
+    $content= ['uri' => $uri, 'mimeType' => $mimeType];
+    if (is_array($result)) {
+      $content+= $result;
+    } else if ($result instanceof Bytes) {
+      $content['blob']= base64_encode($result);
+    } else {
+      $content['text']= (string)$result;
+    }
+    return [$content];
   }
 
   /** Access a given method */
