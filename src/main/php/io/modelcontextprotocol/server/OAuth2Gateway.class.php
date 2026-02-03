@@ -216,7 +216,7 @@ class OAuth2Gateway {
           return $this->result($response, ['token_type' => 'Bearer'] + $token);
 
         default:
-          return $this->error($response, 'invalid_request', 'Cannot handle requests to '.$path);
+          return $this->error($response, 404, 'invalid_request', 'Cannot handle requests to '.$path);
       }
     };
   }
