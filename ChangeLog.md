@@ -3,6 +3,11 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.13.0 / 2026-02-03
+
+* Merged PR #20: Make it possible to supply meta data for discovery
+  and resources.
+  (@thekid)
 * Fixed `io.modelcontextprotocol.EventStream` implementation when
   given input stream does not also implement `lang.Value`
   (@thekid)
