@@ -3,6 +3,7 @@
 use Traversable;
 use io\streams\{InputStream, StringReader};
 use text\json\StringInput;
+use util\Objects;
 
 /** @test io.modelcontextprotocol.unittest.EventStreamTest */
 class EventStream extends Outcome {
@@ -37,10 +38,10 @@ class EventStream extends Outcome {
   }
 
   /** @return string */
-  public function toString() { return nameof($this).'('.$this->stream->toString().')'; }
+  public function toString() { return nameof($this).'('.Objects::stringOf($this->stream).')'; }
 
   /** @return string */
-  public function hashCode() { return 'S'.$this->stream->hashCode(); }
+  public function hashCode() { return 'S'.Objects::hashOf($this->stream); }
 
   /**
    * Comparison
@@ -50,7 +51,7 @@ class EventStream extends Outcome {
    */
   public function compareTo($value) {
     return $value instanceof self
-      ? $this->stream->compareTo($value->stream)
+      ? Objects::compare($this->stream, $value->stream)
       : 1
     ;
   }

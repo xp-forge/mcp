@@ -3,6 +3,9 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Fixed `io.modelcontextprotocol.EventStream` implementation when
+  given input stream does not also implement `lang.Value`
+  (@thekid)
 * Fixed initialization being rerun on first call when invoking the
   `initialize()` method manually
   (@thekid)
