@@ -24,6 +24,12 @@ class Greetings {
     return "Hello {$name}";
   }
 
+  /** Greeting card */
+  #[Resource('ui://greeting/card', 'text/html;profile=mcp-app')]
+  public function card() {
+    return ['text' => '<html>...</html>', '_meta' => ['ui' => ['prefersBorder' => true]]];
+  }
+
   /** Greets users */
   #[Prompt]
   public function user(
@@ -38,6 +44,12 @@ class Greetings {
   #[Tool]
   public function languages() {
     return ['en', 'de'];
+  }
+
+  /** Launches greeting card designer */
+  #[Tool(meta: ['ui' => ['resourceUri' => 'ui://greeting/card']])]
+  public function launch() {
+    return 'App launching...';
   }
 
   /** Repeats a given greeting */

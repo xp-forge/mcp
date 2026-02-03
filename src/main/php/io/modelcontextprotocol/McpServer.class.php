@@ -67,8 +67,7 @@ class McpServer implements Handler, Traceable {
       },
       'resources/read' => function($payload, $request) {
         if ($readable= $this->delegate->readable($payload['params']['uri'])) {
-          $contents= $readable([], $request);
-          return ['contents' => $contents];
+          return ['contents' => $readable([], $request)];
         }
         throw new NoSuchElementException($payload['params']['uri']);
       },
