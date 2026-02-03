@@ -1,6 +1,6 @@
 <?php namespace io\modelcontextprotocol\unittest;
 
-use io\modelcontextprotocol\server\{Implementation, Resource, Meta, Prompt, Tool, Param, Value};
+use io\modelcontextprotocol\server\{Implementation, Resource, Prompt, Tool, Param, Value};
 use util\Bytes;
 
 #[Implementation]
@@ -47,7 +47,7 @@ class Greetings {
   }
 
   /** Launches greeting card designer */
-  #[Tool, Meta(['ui' => ['resourceUri' => 'ui://greeting/card']])]
+  #[Tool(meta: ['ui' => ['resourceUri' => 'ui://greeting/card']])]
   public function launch() {
     return 'App launching...';
   }

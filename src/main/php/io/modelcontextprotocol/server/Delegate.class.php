@@ -37,7 +37,9 @@ abstract class Delegate {
 
   /** Yields all tools in a given type */
   protected function toolsIn(Type $type, string $namespace): iterable {
-    foreach ($type->methods()->annotated(Tool::class) as $name => $method) {
+    foreach ($type->methods() as $name => $method) {
+      if (null === ($annotation= $method->annotation(Tool::class))) continue;
+
       $properties= $required= [];
       foreach ($method->parameters() as $param => $reflect) {
         $annotations= $reflect->annotations();
@@ -59,13 +61,15 @@ abstract class Delegate {
           'properties' => $properties ?: (object)[],
           'required'   => $required,
         ],
-      ] + (($meta= $method->annotation(Meta::class)) ? ['_meta' => $meta->argument(0)] : []);
+      ] + (($meta= $annotation->argument('meta')) ? ['_meta' => $meta] : []);
     }
   }
 
   /** Yields all prompts in a given type */
   protected function promptsIn(Type $type, string $namespace): iterable {
-    foreach ($type->methods()->annotated(Prompt::class) as $name => $method) {
+    foreach ($type->methods() as $name => $method) {
+      if (null === ($annotation= $method->annotation(Prompt::class))) continue;
+
       $arguments= [];
       foreach ($method->parameters() as $param => $reflect) {
         $annotations= $reflect->annotations();
@@ -91,20 +95,21 @@ abstract class Delegate {
         'name'        => $namespace.'_'.$name,
         'description' => $method->comment() ?? ucfirst($name).' '.$namespace,
         'arguments'   => $arguments,
-      ] + (($meta= $method->annotation(Meta::class)) ? ['_meta' => $meta->argument(0)] : []);
+      ] + (($meta= $annotation->argument('meta')) ? ['_meta' => $meta] : []);
     }
   }
 
   /** Yields all resources in a given type */
   protected function resourcesIn(Type $type, string $namespace, bool $templates): iterable {
     foreach ($type->methods() as $name => $method) {
-      if ($annotation= $method->annotation(Resource::class)) {
-        $resource= $annotation->newInstance();
-        $templates === $resource->template && yield $resource->meta + [
-          'name'        => $namespace.'_'.$name,
-          'description' => $method->comment() ?? null,
-        ] + (($meta= $method->annotation(Meta::class)) ? ['_meta' => $meta->argument(0)] : []);
-      }
+      if (null === ($annotation= $method->annotation(Resource::class))) continue;
+
+      $resource= $annotation->newInstance();
+      $templates === $resource->template && yield $resource->struct + [
+        'mimeType'    => $resource->mimeType,
+        'name'        => $namespace.'_'.$name,
+        'description' => $method->comment() ?? null,
+      ];
     }
   }
 
