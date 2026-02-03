@@ -56,7 +56,8 @@ class McpClient implements Traceable {
     switch ($init->key()) {
       case 'result':
         $result= $init->current();
-        $this->transport->version($result->value()['protocolVersion'] ?? $this->version);
+        $this->server= $result->value();
+        $this->transport->version($this->server['protocolVersion'] ?? $this->version);
         $this->transport->notify('notifications/initialized');
         return $result;
 
@@ -76,7 +77,7 @@ class McpClient implements Traceable {
    * @throws io.modelcontextprotocol.CallFailed
    */
   public function call($method, $params= null): Outcome {
-    $this->server??= $this->initialize()->value();
+    $this->server ?? $this->initialize()->value();
     foreach ($this->transport->call($method, $params) as $op => $result) {
       switch ($op) {
         case 'result': return $result;

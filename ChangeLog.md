@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+* Fixed initialization being rerun on first call when invoking the
+  `initialize()` method manually
+  (@thekid)
+
 ## 0.12.0 / 2026-01-21
 
 * Fixed JSON deserialization in standard I/O and event streams, using
