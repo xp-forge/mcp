@@ -64,6 +64,14 @@ class McpClientTest {
       }
 
       public function close() { }
+
+      public function hashCode() { return spl_object_id($this); }
+
+      public function toString() { return nameof($this); }
+
+      public function compareTo($value) {
+        return $value instanceof self ? $this <=> $value : 1;
+      }
     };
     $fixture= new McpClient($transport);
 
@@ -85,6 +93,14 @@ class McpClientTest {
         ['notify' => 'notifications/initialized']
       ],
       $transport->sent
+    );
+  }
+
+  #[Test]
+  public function string_representation() {
+    Assert::equals(
+      'io.modelcontextprotocol.McpClient(->io.modelcontextprotocol.StreamableHttp<http://localhost/>, version= 2025-06-18)',
+      (new McpClient(self::ENDPOINT))->toString()
     );
   }
 }

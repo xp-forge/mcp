@@ -1,11 +1,11 @@
 <?php namespace io\modelcontextprotocol;
 
-use lang\{Closeable, CommandLine, IllegalArgumentException};
+use lang\{Closeable, CommandLine, IllegalArgumentException, Value};
 use util\URI;
 use util\log\Traceable;
 
 /** @test io.modelcontextprotocol.unittest.TransportTest */
-abstract class Transport implements Closeable, Traceable {
+abstract class Transport implements Closeable, Traceable, Value {
 
   /** @param string $version */ 
   public abstract function version($version);

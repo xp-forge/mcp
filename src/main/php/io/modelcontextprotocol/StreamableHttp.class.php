@@ -1,8 +1,8 @@
 <?php namespace io\modelcontextprotocol;
 
 use lang\FormatException;
-use webservices\rest\Endpoint;
 use util\URI;
+use webservices\rest\Endpoint;
 
 /**
  * Streamable HTTP MCP transport
@@ -124,5 +124,25 @@ class StreamableHttp extends Transport {
     // MCP endpoint with the Mcp-Session-Id header, to explicitly terminate the session
     $this->endpoint->resource($this->path)->delete();
     $this->endpoint->with(self::SESSION, null);
+  }
+
+  /** @return string */
+  public function hashCode() {
+    return 'H'.$this->endpoint->base()->hashCode();
+  }
+
+  /** @return string */
+  public function toString() {
+    return nameof($this).'<'.$this->endpoint->base().'>';
+  }
+
+  /**
+   * Comparison
+   *
+   * @param  var $value
+   * @return int
+   */
+  public function compareTo($value) {
+    return $value instanceof self ? $this->endpoint->compareTo($value->endpoint) : 1;
   }
 }

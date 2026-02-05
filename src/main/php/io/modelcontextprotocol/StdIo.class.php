@@ -94,4 +94,24 @@ class StdIo extends Transport {
       $this->process->close();
     }
   }
+
+  /** @return string */
+  public function hashCode() {
+    return 'I'.crc32($this->process->getCommandLine());
+  }
+
+  /** @return string */
+  public function toString() {
+    return nameof($this).'<'.$this->process->getCommandLine().'>';
+  }
+
+  /**
+   * Comparison
+   *
+   * @param  var $value
+   * @return int
+   */
+  public function compareTo($value) {
+    return $value instanceof self ? $this->process <=> $value->process : 1;
+  }
 }

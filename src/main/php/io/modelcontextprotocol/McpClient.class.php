@@ -1,5 +1,6 @@
 <?php namespace io\modelcontextprotocol;
 
+use lang\Value;
 use util\log\Traceable;
 
 /**
@@ -8,7 +9,7 @@ use util\log\Traceable;
  * @see  https://deadprogrammersociety.com/2025/03/calling-mcp-servers-the-hard-way.html
  * @test io.modelcontextprotocol.unittest.McpClientTest
  */
-class McpClient implements Traceable {
+class McpClient implements Traceable, Value {
   private $transport, $version, $capabilities;
   private $server= null;
 
@@ -91,5 +92,25 @@ class McpClient implements Traceable {
   public function close() {
     $this->transport->close();
     $this->server= null;
+  }
+
+  /** @return string */
+  public function hashCode() {
+    return 'M'.$this->version.':'.$this->transport->hashCode();
+  }
+
+  /** @return string */
+  public function toString() {
+    return nameof($this).'(->'.$this->transport->toString().', version= '.$this->version.')';
+  }
+
+  /**
+   * Comparison
+   *
+   * @param  var $value
+   * @return int
+   */
+  public function compareTo($value) {
+    return $value instanceof self ? $this->hashCode() <=> $value->hashCode() : 1;
   }
 }
