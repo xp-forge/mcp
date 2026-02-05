@@ -3,6 +3,11 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.13.1 / 2026-02-05
+
+* Fixed missing string representations of client and transports - @thekid
+* Fixed error handling for unrouted MCP requests - @thekid
+
 ## 0.13.0 / 2026-02-03
 
 * Merged PR #20: Make it possible to supply meta data for discovery
