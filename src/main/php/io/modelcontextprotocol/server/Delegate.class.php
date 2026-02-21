@@ -50,7 +50,12 @@ abstract class Delegate {
         } else {
           $properties[$param]= ['type' => 'string', 'description' => ucfirst($param)];
         }
-        $reflect->optional() || $required[]= $param;
+
+        if ($reflect->optional()) {
+          $properties[$param]['default']= $reflect->default();
+        } else {
+          $required[]= $param;
+        }
       }
 
       yield [
