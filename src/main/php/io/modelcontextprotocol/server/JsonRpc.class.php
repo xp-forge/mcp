@@ -48,8 +48,10 @@ class JsonRpc implements Handler, Traceable {
     $response->header('Content-Type', self::JSON);
 
     $output= new StreamOutput($response->stream());
+    $payload= ['jsonrpc' => '2.0', 'id' => $id, 'result' => $result];
     try {
-      $output->write(['jsonrpc' => '2.0', 'id' => $id, 'result' => $result]);
+      $this->cat && $this->cat->debug('<<<', $payload);
+      $output->write($payload);
     } finally {
       $output->close();
     }
@@ -69,8 +71,10 @@ class JsonRpc implements Handler, Traceable {
     $response->header('Content-Type', self::JSON);
 
     $output= new StreamOutput($response->stream());
+    $payload= ['jsonrpc' => '2.0', 'id' => $id, 'error' => ['code' => $code, 'message' => $message]];
     try {
-      $output->write(['jsonrpc' => '2.0', 'id' => $id, 'error' => ['code' => $code, 'message' => $message]]);
+      $this->cat && $this->cat->debug('<<<', $payload);
+      $output->write($payload);
     } finally {
       $output->close();
     }
@@ -91,7 +95,6 @@ class JsonRpc implements Handler, Traceable {
       foreach ($this->routes as $pattern => $route) {
         if (preg_match($pattern, $payload['method'], $matches)) {
           $result= $route($payload, $request->pass('matches', $matches));
-          $this->cat && $this->cat->debug('<<<', $result);
 
           if ($result instanceof Response) {
             $response->answer($result->status);
@@ -110,7 +113,7 @@ class JsonRpc implements Handler, Traceable {
         }
       }
 
-      $this->cat && $this->cat->warn('<<<', 'Unhandled', array_keys($this->routes));
+      $this->cat && $this->cat->warn('<<<', 'Unhandled', $payload['method']);
       $this->error($response, $payload['id'], self::METHOD_NOT_FOUND, $payload['method']);
     } catch (FormatException $e) {
       $this->cat && $this->cat->warn('<<<', $e);
