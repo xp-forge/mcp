@@ -1,11 +1,12 @@
 <?php namespace io\modelcontextprotocol;
 
 use io\modelcontextprotocol\server\{Delegate, JsonRpc, Response, Result};
-use lang\FormatException;
+use lang\{FormatException, ClassLoader};
 use text\json\Json;
 use util\NoSuchElementException;
 use util\log\Traceable;
 use web\Handler;
+use web\io\StaticContent;
 
 /**
  * MCP Server implementation
@@ -92,6 +93,26 @@ class McpServer implements Handler, Traceable {
   /** @param util.log.LogCategory $cat */
   public function setTrace($cat) {
     $this->rpc->setTrace($cat);
+  }
+
+  /**
+   * Serves resources
+   *
+   * @param  [:string]|function(util.URI, io.File, string): iterable $headers
+   * @return function(web.Request, web.Response)
+   */
+  public function resources($headers= []) {
+    $cl= ClassLoader::getDefault();
+    $content= (new StaticContent())->with($headers);
+
+    return function($request, $response) use($content, $cl) {
+      $resource= basename($request->uri()->path());
+      return $content->serve(
+        $request,
+        $response,
+        $cl->providesResource($resource) ? $cl->getResourceAsStream($resource) : null
+      );
+    };
   }
 
   /**
