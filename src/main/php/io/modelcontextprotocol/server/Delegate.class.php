@@ -40,6 +40,7 @@ abstract class Delegate {
     foreach ($type->methods() as $name => $method) {
       if (null === ($annotation= $method->annotation(Tool::class))) continue;
 
+      $meta= $annotation->argument('meta');
       $properties= $required= [];
       foreach ($method->parameters() as $param => $reflect) {
         $annotations= $reflect->annotations();
@@ -66,7 +67,7 @@ abstract class Delegate {
           'properties' => $properties ?: (object)[],
           'required'   => $required,
         ],
-      ] + (($meta= $annotation->argument('meta')) ? ['_meta' => $meta] : []);
+      ] + ($meta ? ['_meta' => $meta] : []);
     }
   }
 
@@ -75,6 +76,7 @@ abstract class Delegate {
     foreach ($type->methods() as $name => $method) {
       if (null === ($annotation= $method->annotation(Prompt::class))) continue;
 
+      $meta= $annotation->argument('meta');
       $arguments= [];
       foreach ($method->parameters() as $param => $reflect) {
         $annotations= $reflect->annotations();
@@ -100,7 +102,7 @@ abstract class Delegate {
         'name'        => $namespace.'_'.$name,
         'description' => $method->comment() ?? ucfirst($name).' '.$namespace,
         'arguments'   => $arguments,
-      ] + (($meta= $annotation->argument('meta')) ? ['_meta' => $meta] : []);
+      ] + ($meta ? ['_meta' => $meta] : []);
     }
   }
 

@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.13.2 / 2026-06-04
+
+* Fixed `meta` annotation handling for prompts and tools - @thekid
+
 ## 0.13.1 / 2026-02-05
 
 * Fixed missing string representations of client and transports - @thekid
