@@ -3,6 +3,10 @@ Model Context Protocol change log
 
 ## ?.?.? / ????-??-??
 
+## 0.14.0 / 2026-10-17
+
+* Added compatibility with `xp-forge/json` version 7.0+ - @thekid
+
 ## 0.13.2 / 2026-06-04
 
 * Fixed `meta` annotation handling for prompts and tools - @thekid
